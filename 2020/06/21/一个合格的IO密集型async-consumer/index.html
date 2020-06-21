@@ -46,29 +46,33 @@
   };
 </script>
 
-  <meta property="og:type" content="website">
-<meta property="og:title" content="pd">
-<meta property="og:url" content="http://yoursite.com/index.html">
+  <meta name="description" content="核心要点相信我们有很多的consumer都涉及到的是从一个消息队列消费，处理后可能还涉及到往多个IO目标（如回调一个http地址，上传到elasticsearch…）进行写的情况。对这种I&#x2F;O密集的情况，下面有一些我认为的需要注意点：  所有IO操作要能够批量化 需要能处理异常信号，处理完当前已取出的元素后才推出 考虑到上下游挤压&#x2F;性能问题，要能够自动&#x2F;灵活的调整获取元素&#x2F;调用下游时的并发量 确保">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一个合格的IO密集型async consumer">
+<meta property="og:url" content="http://yoursite.com/2020/06/21/%E4%B8%80%E4%B8%AA%E5%90%88%E6%A0%BC%E7%9A%84IO%E5%AF%86%E9%9B%86%E5%9E%8Basync-consumer/index.html">
 <meta property="og:site_name" content="pd">
+<meta property="og:description" content="核心要点相信我们有很多的consumer都涉及到的是从一个消息队列消费，处理后可能还涉及到往多个IO目标（如回调一个http地址，上传到elasticsearch…）进行写的情况。对这种I&#x2F;O密集的情况，下面有一些我认为的需要注意点：  所有IO操作要能够批量化 需要能处理异常信号，处理完当前已取出的元素后才推出 考虑到上下游挤压&#x2F;性能问题，要能够自动&#x2F;灵活的调整获取元素&#x2F;调用下游时的并发量 确保">
 <meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-06-21T08:23:41.000Z">
+<meta property="article:modified_time" content="2020-06-21T09:25:08.736Z">
 <meta property="article:author" content="pd">
-<meta property="article:tag" content="Python">
-<meta property="article:tag" content=" Go">
+<meta property="article:tag" content="python">
+<meta property="article:tag" content="编程通用">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://yoursite.com/">
+<link rel="canonical" href="http://yoursite.com/2020/06/21/%E4%B8%80%E4%B8%AA%E5%90%88%E6%A0%BC%E7%9A%84IO%E5%AF%86%E9%9B%86%E5%9E%8Basync-consumer/">
 
 
 <script id="page-configurations">
   // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
-    isHome: true,
-    isPost: false
+    isHome: false,
+    isPost: true
   };
 </script>
 
-  <title>pd</title>
+  <title>一个合格的IO密集型async consumer | pd</title>
   
 
 
@@ -163,10 +167,10 @@
             
 
   <div class="posts-expand">
-        
+      
   
   
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/21/%E4%B8%80%E4%B8%AA%E5%90%88%E6%A0%BC%E7%9A%84IO%E5%AF%86%E9%9B%86%E5%9E%8Basync-consumer/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -180,8 +184,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/06/21/%E4%B8%80%E4%B8%AA%E5%90%88%E6%A0%BC%E7%9A%84IO%E5%AF%86%E9%9B%86%E5%9E%8Basync-consumer/" class="post-title-link" itemprop="url">一个合格的IO密集型async consumer</a>
+          一个合格的IO密集型async consumer
         </h1>
 
         <div class="post-meta">
@@ -217,7 +220,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h3 id="核心要点"><a href="#核心要点" class="headerlink" title="核心要点"></a>核心要点</h3><p>相信我们有很多的consumer都涉及到的是从一个消息队列消费，处理后可能还涉及到往多个IO目标（如回调一个http地址，上传到elasticsearch…）进行写的情况。对这种I/O密集的情况，下面有一些我认为的需要注意点：</p>
+        <h3 id="核心要点"><a href="#核心要点" class="headerlink" title="核心要点"></a>核心要点</h3><p>相信我们有很多的consumer都涉及到的是从一个消息队列消费，处理后可能还涉及到往多个IO目标（如回调一个http地址，上传到elasticsearch…）进行写的情况。对这种I/O密集的情况，下面有一些我认为的需要注意点：</p>
 <ol>
 <li>所有IO操作要能够批量化</li>
 <li>需要能处理异常信号，处理完当前已取出的元素后才推出</li>
@@ -277,109 +280,31 @@
 </ol>
 <h3 id="具体代码"><a href="#具体代码" class="headerlink" title="具体代码"></a>具体代码</h3><p>TODO</p>
 
-      
     </div>
 
     
     
     
+
       <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
+          <div class="post-tags">
+              <a href="/tags/python/" rel="tag"># python</a>
+              <a href="/tags/%E7%BC%96%E7%A8%8B%E9%80%9A%E7%94%A8/" rel="tag"># 编程通用</a>
+          </div>
 
         
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/31/Python-django-aiohttp-vs-Go-Echo-web-server%E5%8E%8B%E6%B5%8B%E6%80%A7%E8%83%BD%E5%AF%B9%E6%AF%94/">
 
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="pd">
-      <meta itemprop="description" content="">
-    </span>
 
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="pd">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/01/31/Python-django-aiohttp-vs-Go-Echo-web-server%E5%8E%8B%E6%B5%8B%E6%80%A7%E8%83%BD%E5%AF%B9%E6%AF%94/" class="post-title-link" itemprop="url">Python(django & aiohttp) vs Go(Echo) web server压测性能对比</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2020-01-31 17:23:41 / 修改时间：18:08:57" itemprop="dateCreated datePublished" datetime="2020-01-31T17:23:41+08:00">2020-01-31</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
-                    <span itemprop="name">编程</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="背景说明"><a href="#背景说明" class="headerlink" title="背景说明"></a>背景说明</h3><ul>
-<li>web后端server场景：全局initial时访问了一次数据库user表、形成本地内存的name-map-passwd的dict/map。对于进来的每个请求，检测了必须的参数是否齐全、而后从name-map-passwd检测是否有权限。最后json序列化后lpush到redis(均没有限制redis pool的max size)。</li>
-<li>python3.7, aiohttp v3.5.4，nginx,  5worker uvloop gunicorn based on .sock file</li>
-<li>python3.7, django v3.0.2，nginx，uwsgi，5worker based on .sock file</li>
-<li>go1.13.6，Echo v4.0.0，nginx，5worker based on http port</li>
-<li>压测机器为8核16G内存，被压测机器4核16G内存</li>
-<li>压测工具使用同事开发的<a href="https://github.com/yunsonbai/ysab" target="_blank" rel="noopener">ysab</a><ul>
-<li>重要参数说明； -n：Number of multiple requests to make at a time； -r：round；</li>
-</ul>
-</li>
-</ul>
-<h3 id="结果展示"><a href="#结果展示" class="headerlink" title="结果展示"></a>结果展示</h3><h4 id="Echo-Go"><a href="#Echo-Go" class="headerlink" title="Echo(Go)"></a>Echo(Go)</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">$ ysab -n 900 -r 100 -u &#39;http:&#x2F;&#x2F;host:port&#x2F;sendMsgAll&#x2F;?userkey&#x3D;xxx&amp;type&#x3D;xxx&amp;content&#x3D;dfhajklshfjkld&amp;tolist&#x3D;156526xxxxx&amp;username&#x3D;pd&#39;</span><br><span class="line"></span><br><span class="line">Summary:</span><br><span class="line">  Complete requests:		90000</span><br><span class="line">  Failed requests:		0</span><br><span class="line">  Time taken (s):		10.66654527</span><br><span class="line">  Total data size (Byte):	10530000</span><br><span class="line">  Data size&#x2F;request (Byte):	117</span><br><span class="line">  Max use time (ms):		1276</span><br><span class="line">  Min use time (ms):		6</span><br><span class="line">  Average use time (ms):	103.338</span><br><span class="line">  Requests&#x2F;sec:			8437.596027753041</span><br><span class="line">  SuccessRequests&#x2F;sec:		8437.596027753041</span><br><span class="line"></span><br><span class="line">Percentage of waiting time (ms):</span><br><span class="line">    10.00%:		34</span><br><span class="line">    25.00%:		54</span><br><span class="line">    50.00%:		86</span><br><span class="line">    75.00%:		131</span><br><span class="line">    90.00%:		180</span><br><span class="line">    95.00%:		221</span><br><span class="line">    99.00%:		335</span><br><span class="line">    99.90%:		1098</span><br><span class="line">    99.99%:		1274</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Time detail (ms)</span><br><span class="line">  item		min		mean		max</span><br><span class="line">  dns		0		0		0</span><br><span class="line">  conn		0		0.154		40</span><br><span class="line">  wait		6		103.029		1276</span><br><span class="line">  resp		0		0.035		22</span><br><span class="line"></span><br><span class="line">Response Time histogram (code: requests):</span><br><span class="line">  200:		90000</span><br></pre></td></tr></table></figure>
-
-<h4 id="Aiohttp-Python"><a href="#Aiohttp-Python" class="headerlink" title="Aiohttp(Python)"></a>Aiohttp(Python)</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">$ ysab -n 900 -r 100 -u &#39;http:&#x2F;&#x2F;host:port&#x2F;sendMsgAll&#x2F;?userkey&#x3D;xxx&amp;type&#x3D;xxx&amp;content&#x3D;dfhajklshfjkld&amp;tolist&#x3D;156526xxxxx&amp;username&#x3D;pd&#39;</span><br><span class="line"></span><br><span class="line">Summary:</span><br><span class="line">  Complete requests:		90000</span><br><span class="line">  Failed requests:		1304</span><br><span class="line">  Time taken (s):		35.491095644</span><br><span class="line">  Total data size (Byte):	11401288</span><br><span class="line">  Data size&#x2F;request (Byte):	126</span><br><span class="line">  Max use time (ms):		1368</span><br><span class="line">  Min use time (ms):		1</span><br><span class="line">  Average use time (ms):	353.329</span><br><span class="line">  Requests&#x2F;sec:			2535.8473264043932</span><br><span class="line">  SuccessRequests&#x2F;sec:		2499.105716252934</span><br><span class="line"></span><br><span class="line">Percentage of waiting time (ms):</span><br><span class="line">    10.00%:		172</span><br><span class="line">    25.00%:		243</span><br><span class="line">    50.00%:		324</span><br><span class="line">    75.00%:		437</span><br><span class="line">    90.00%:		578</span><br><span class="line">    95.00%:		679</span><br><span class="line">    99.00%:		885</span><br><span class="line">    99.90%:		1117</span><br><span class="line">    99.99%:		1368</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Time detail (ms)</span><br><span class="line">  item		min		mean		max</span><br><span class="line">  dns		0		0		0</span><br><span class="line">  conn		0		0.182		58</span><br><span class="line">  wait		1		352.967		1368</span><br><span class="line">  resp		0		0.002		12</span><br><span class="line"></span><br><span class="line">Response Time histogram (code: requests):</span><br><span class="line">  200:		88696</span><br><span class="line">  502:		1304</span><br></pre></td></tr></table></figure>
-
-<h5 id="Django-Python"><a href="#Django-Python" class="headerlink" title="Django(Python)"></a>Django(Python)</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">$ ysab -n 900 -r 100 -u &#39;http:&#x2F;&#x2F;host:port&#x2F;sendMsgAll&#x2F;?userkey&#x3D;xxx&amp;type&#x3D;xxx&amp;content&#x3D;dfhajklshfjkld&amp;tolist&#x3D;156526xxxxx&amp;username&#x3D;pd&#39;</span><br><span class="line"></span><br><span class="line">Summary:</span><br><span class="line">	Complete requests:		90000</span><br><span class="line">  Failed requests:		86630</span><br><span class="line">  Time taken (s):		3.070857802</span><br><span class="line">  Total data size (Byte):	15411610</span><br><span class="line">  Data size&#x2F;request (Byte):	171</span><br><span class="line">  Max use time (ms):		327</span><br><span class="line">  Min use time (ms):		0</span><br><span class="line">  Average use time (ms):	17.152</span><br><span class="line">  Requests&#x2F;sec:			29307.771900536867</span><br><span class="line">  SuccessRequests&#x2F;sec:		1097.4132367201025</span><br><span class="line"></span><br><span class="line">Percentage of waiting time (ms):</span><br><span class="line">    10.00%:		1</span><br><span class="line">    25.00%:		2</span><br><span class="line">    50.00%:		14</span><br><span class="line">    75.00%:		20</span><br><span class="line">    90.00%:		31</span><br><span class="line">    95.00%:		45</span><br><span class="line">    99.00%:		126</span><br><span class="line">    99.90%:		279</span><br><span class="line">    99.99%:		322</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Time detail (ms)</span><br><span class="line">  item		min		mean		max</span><br><span class="line">  dns		0		0		0</span><br><span class="line">  conn		0		0.191		88</span><br><span class="line">  wait		0		7.667		160</span><br><span class="line">  resp		0		0.295		197</span><br><span class="line"></span><br><span class="line">Response Time histogram (code: requests):</span><br><span class="line">  200:		3370</span><br><span class="line">  502:		86630</span><br></pre></td></tr></table></figure>
-
-<p><font color="#dd0000">可见，同步django根本不能够承受到-n为900的情况，经过测试，其只能达到-n参数为100的程度，数据如下：</font></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">Summary:</span><br><span class="line">  Complete requests:		10000</span><br><span class="line">  Failed requests:		0</span><br><span class="line">  Time taken (s):		6.128261992</span><br><span class="line">  Total data size (Byte):	1260000</span><br><span class="line">  Data size&#x2F;request (Byte):	126</span><br><span class="line">  Max use time (ms):		91</span><br><span class="line">  Min use time (ms):		5</span><br><span class="line">  Average use time (ms):	60.374</span><br><span class="line">  Requests&#x2F;sec:			1631.7840218081851</span><br><span class="line">  SuccessRequests&#x2F;sec:		1631.7840218081851</span><br><span class="line"></span><br><span class="line">Percentage of waiting time (ms):</span><br><span class="line">    10.00%:		57</span><br><span class="line">    25.00%:		58</span><br><span class="line">    50.00%:		60</span><br><span class="line">    75.00%:		62</span><br><span class="line">    90.00%:		64</span><br><span class="line">    95.00%:		66</span><br><span class="line">    99.00%:		81</span><br><span class="line">    99.90%:		89</span><br><span class="line">    99.99%:		90</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Time detail (ms)</span><br><span class="line">  item		min		mean		max</span><br><span class="line">  dns		0		0		0</span><br><span class="line">  conn		0		0.009		6</span><br><span class="line">  wait		3		60.277		91</span><br><span class="line">  resp		0		0.003		10</span><br><span class="line"></span><br><span class="line">Response Time histogram (code: requests):</span><br><span class="line">  200:		10000</span><br></pre></td></tr></table></figure>
-
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><ul>
-<li>在稍微需要考虑并发的情况下，不要使用同步模式下的Django。</li>
-<li>aiohttp，由于已出现1.4%的fail，故认为其已达极限，结合我做的别的压测，其能承受qps应该在2.2k左右。</li>
-<li>Go，在qps达8.4k的情况下，未出现失败请求，且总体请求时间仅为aiohttp的28.6%，可见其真实性能应该高于此。</li>
-</ul>
-
-      
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/01/31/Python-django-aiohttp-vs-Go-Echo-web-server%E5%8E%8B%E6%B5%8B%E6%80%A7%E8%83%BD%E5%AF%B9%E6%AF%94/" rel="prev" title="Python(django & aiohttp) vs Go(Echo) web server压测性能对比">
+      <i class="fa fa-chevron-left"></i> Python(django & aiohttp) vs Go(Echo) web server压测性能对比
+    </a></div>
+      <div class="post-nav-item"></div>
     </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
       </footer>
+    
   </article>
   
   
@@ -387,12 +312,10 @@
 
   </div>
 
-  
-
-
 
           </div>
           
+    <div class="comments" id="gitalk-container"></div>
 
 <script>
   window.addEventListener('tabs:register', () => {
@@ -439,6 +362,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#核心要点"><span class="nav-number">1.</span> <span class="nav-text">核心要点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#详细说明"><span class="nav-number">2.</span> <span class="nav-text">详细说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#具体代码"><span class="nav-number">3.</span> <span class="nav-text">具体代码</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -549,6 +473,25 @@
 
   
 
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'edf9b4cf38817a8e9705',
+      clientSecret: 'a9e7395b37100257f052db822d40873b9fca18a5',
+      repo: 'pillipanda.github.io',
+      owner: 'pillipanda',
+      admin: ['pillipanda'],
+      id: 'c393c43543a90918bc1c6706e731c045',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
 
 </body>
 </html>
