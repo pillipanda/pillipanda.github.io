@@ -170,6 +170,246 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/07/%E8%AE%B0%E5%9F%BA%E4%BA%8Eredis%E5%81%9A%E9%A2%91%E6%AC%A1%E9%99%90%E5%88%B6%E9%81%87%E5%88%B0%E7%9A%84bug/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="-_-">
+      <meta itemprop="description" content="15652616715">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="pd">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/07/07/%E8%AE%B0%E5%9F%BA%E4%BA%8Eredis%E5%81%9A%E9%A2%91%E6%AC%A1%E9%99%90%E5%88%B6%E9%81%87%E5%88%B0%E7%9A%84bug/" class="post-title-link" itemprop="url">记基于redis做频次限制遇到的bug</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-07-07 22:41:36 / 修改时间：23:34:20" itemprop="dateCreated datePublished" datetime="2020-07-07T22:41:36+08:00">2020-07-07</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
+                    <span itemprop="name">编程</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>redis常被用作限流处理，这里主要谈一个之前遇到的遇到过的问题及其解决（顺便会提供一个批量化的版本）</p>
+<h3 id="问题版本"><a href="#问题版本" class="headerlink" title="问题版本"></a>问题版本</h3><ul>
+<li><p>假设检查的是一个key，要求是在规定时间x内的访问不超过y次（x&gt;0, y&gt;0）：</p>
+<ol>
+<li>GET key  若为空表示规定时间内0次访问，此次通过，并且执行 SET key 1 EX x后就可以返回0了，客户端再进行比较x与0</li>
+<li>若不为空，调用INCR key（<strong>此处的一个要点是INCR并不会去除掉key的expire信息</strong>），返回GET key或者INCR执行的返回减1即可</li>
+</ol>
+</li>
+<li><p>下面是不那么伪的伪代码</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">freq_controled</span><span class="params">(key: str, time_gap: int, limit: int)</span>:</span></span><br><span class="line">    visit_amount = redis_client.get(key)  <span class="comment"># 假设key存在时返回的是int类型吧</span></span><br><span class="line">    <span class="keyword">if</span> visit_amount <span class="keyword">is</span> <span class="literal">None</span>:  <span class="comment"># 没有此key</span></span><br><span class="line">        redis_client.set(key, <span class="number">1</span>, EX, limit)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line">    redis_client.incr(key, <span class="number">1</span>)</span><br><span class="line">    <span class="keyword">return</span> visit_amount &gt; limit</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>问题解释</strong></p>
+<ul>
+<li>核心bug出现在redis_client.get(key)的时候key存在，但是当运行redis server执行redis_client.incr(key, 1)的时候，key过期从而变得不存在了，此时再执行redis_client.incr(key, 1)就会生成一个没有expire信息、永不过期的key</li>
+</ul>
+</li>
+</ul>
+<h3 id="问题解决"><a href="#问题解决" class="headerlink" title="问题解决"></a>问题解决</h3><ul>
+<li><p>通过检测redis_client.incr(key, 1)的返回值、如果是1则表示触发了bug情景（因为正常情况下此返回应大于等于2才对），此时需要再执行一次redis_client.set(key, 2, EX, limit)   # 保险起见设为2吧（万一触发这个set为1的是另一个client呢）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">freq_controled</span><span class="params">(key: str, time_gap: int, limit: int)</span>:</span></span><br><span class="line">    visit_amount = redis_client.get(key)  <span class="comment"># 假设返回的是int类型吧</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> resp_int:</span><br><span class="line">        redis_client.set(key, <span class="number">1</span>, EX, limit)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line">    incr_resp = redis_client.incr(key, <span class="number">1</span>)  <span class="comment"># 还是假设返回的是int类型吧</span></span><br><span class="line">    <span class="keyword">if</span> incr_resp == <span class="number">1</span>:</span><br><span class="line">        redis_client.set(key, <span class="number">2</span>, EX, limit)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line">    <span class="keyword">return</span> visit_amount &gt; limit</span><br></pre></td></tr></table></figure>
+
+
+
+</li>
+</ul>
+<h3 id="优化"><a href="#优化" class="headerlink" title="优化"></a>优化</h3><ul>
+<li><p>上面的问题在于最坏IO次数太多了，最坏情况下需要3次IO，同理优化还是找老朋友Lua脚本进行（这样无论好坏都1次IO搞定）</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> get_result = redis.call(<span class="string">"GET"</span>, KEYS[<span class="number">1</span>])</span><br><span class="line"><span class="keyword">if</span> <span class="keyword">not</span> get_result <span class="keyword">then</span></span><br><span class="line">    redis.call(<span class="string">"SET"</span>, KEYS[<span class="number">1</span>], <span class="number">1</span>, <span class="string">"EX"</span>, ARGV[<span class="number">1</span>])</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    <span class="keyword">local</span> incr_result = redis.call(<span class="string">"INCR"</span>, KEYS[<span class="number">1</span>])</span><br><span class="line">    <span class="keyword">if</span> incr_result == <span class="number">1</span> <span class="keyword">then</span></span><br><span class="line">        redis.call(<span class="string">"SET"</span>, KEYS[<span class="number">1</span>], <span class="number">2</span>, <span class="string">"EX"</span>, ARGV[<span class="number">1</span>])</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">return</span> incr_result - <span class="number">1</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+
+
+</li>
+</ul>
+<h3 id="批处理"><a href="#批处理" class="headerlink" title="批处理"></a>批处理</h3><ul>
+<li><p>上面的问题在于每次只能提供一个key，那有场景情况下一下就拿到了n个key需要验证，IO次数就是n次了，也不划算，下面提供一个多key作为输入的版本</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> <span class="function"><span class="keyword">function</span> <span class="title">handle_result</span><span class="params">(key, expire)</span></span></span><br><span class="line">    <span class="keyword">local</span> redis_resp = redis.call(<span class="string">"GET"</span>, key)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> redis_resp <span class="keyword">then</span></span><br><span class="line">        redis.call(<span class="string">"SET"</span>, key, <span class="number">1</span>, <span class="string">"EX"</span>, expire)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">local</span> incr_result = redis.call(<span class="string">"INCR"</span>, key)</span><br><span class="line">        <span class="keyword">if</span> incr_result == <span class="number">1</span> <span class="keyword">then</span></span><br><span class="line">            redis.call(<span class="string">"SET"</span>, key, <span class="number">2</span>, <span class="string">"EX"</span>, <span class="built_in">tonumber</span>(expire))</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            <span class="keyword">return</span> incr_result - <span class="number">1</span></span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"><span class="keyword">local</span> final_result = &#123;&#125;</span><br><span class="line"><span class="keyword">for</span> key_index, key <span class="keyword">in</span> <span class="built_in">ipairs</span>(KEYS) <span class="keyword">do</span></span><br><span class="line">    <span class="keyword">local</span> func_ret = handle_result(key, ARGV[key_index])</span><br><span class="line">    <span class="built_in">table</span>.<span class="built_in">insert</span>(final_result, func_ret)</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"><span class="keyword">return</span> final_result</span><br></pre></td></tr></table></figure>
+
+
+
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/26/%E4%BD%BF%E7%94%A8pyenv+poetry/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="-_-">
+      <meta itemprop="description" content="15652616715">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="pd">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/06/26/%E4%BD%BF%E7%94%A8pyenv+poetry/" class="post-title-link" itemprop="url">使用pyenv+poetry</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-06-26 09:17:21" itemprop="dateCreated datePublished" datetime="2020-06-26T09:17:21+08:00">2020-06-26</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>~/open_source » pyenv global                                                                                 pd@pd-mp<br>system</p>
+<hr>
+<p>~/open_source » pyenv version                                                                                pd@pd-mp<br>system (set by /Users/pd/.pyenv/version)</p>
+<hr>
+<p>~/open_source » pyenv versions                                                                               pd@pd-mp</p>
+<ul>
+<li>system (set by /Users/pd/.pyenv/version)<br>3.8.2</li>
+</ul>
+<hr>
+<h2 id="open-source-»-pyenv-global-3-8-2-pd-pd-mp"><a href="#open-source-»-pyenv-global-3-8-2-pd-pd-mp" class="headerlink" title="~/open_source » pyenv global 3.8.2                                                                           pd@pd-mp"></a>~/open_source » pyenv global 3.8.2                                                                           pd@pd-mp</h2><p>~/open_source » pyenv global                                                                                 pd@pd-mp<br>3.8.2</p>
+<hr>
+<p>~/open_source » poetry new lingxi                                                                            pd@pd-mp<br>Created package lingxi in lingxi</p>
+<hr>
+<h2 id="open-source-»-cd-lingxi-pd-pd-mp"><a href="#open-source-»-cd-lingxi-pd-pd-mp" class="headerlink" title="~/open_source » cd lingxi                                                                                    pd@pd-mp"></a>~/open_source » cd lingxi                                                                                    pd@pd-mp</h2><p>~/open_source/lingxi » python –version                                                                      pd@pd-mp<br>Python 3.8.2</p>
+<hr>
+<p>~/open_source/lingxi » poetry local 3.8.2                                                                    pd@pd-mp<br>The command “local” is not defined.</p>
+<hr>
+<h2 id="open-source-lingxi-»-pyenv-local-3-8-2-pd-pd-mp"><a href="#open-source-lingxi-»-pyenv-local-3-8-2-pd-pd-mp" class="headerlink" title="~/open_source/lingxi » pyenv local 3.8.2                                                                     pd@pd-mp"></a>~/open_source/lingxi » pyenv local 3.8.2                                                                     pd@pd-mp</h2><p>~/open_source/lingxi » python –version                                                                      pd@pd-mp<br>Python 3.8.2</p>
+<hr>
+<h2 id="open-source-lingxi-»-vim-pyproject-toml-pd-pd-mp"><a href="#open-source-lingxi-»-vim-pyproject-toml-pd-pd-mp" class="headerlink" title="~/open_source/lingxi » vim pyproject.toml                                                                    pd@pd-mp"></a>~/open_source/lingxi » vim pyproject.toml                                                                    pd@pd-mp</h2><p>~/open_source/lingxi » cat pyproject.toml| grep python                                                       pd@pd-mp<br>python = “^3.8”</p>
+<p>添加已有项目需要的依赖进入【tool.poetry.dependencies】(当然也可以通过poetry add package_name进行安装)<br>[tool.poetry.dependencies]<br>python = “^3.8”<br>sanic = “^20.3.0”<br>Sanic-Cors = “^0.10.0”<br>xmltodict = “^0.12.0”<br>pymongo = “^3.10.1”<br>aioredis = “^1.3.1”<br>aiohttp = “^3.6.2”</p>
+<p>在第一次使用poetry install时会自动为当前项目创建虚拟环境：<br>~/open_source/lingxi » poetry install                                                                        pd@pd-mp<br>Creating virtualenv lingxi-vUuuTXV–py3.8 in /Users/pd/Library/Caches/pypoetry/virtualenvs<br>Updating dependencies<br>Resolving dependencies… (82.2s)</p>
+<p>Writing lock file</p>
+<p>Package operations: 39 installs, 0 updates, 0 removals</p>
+<ul>
+<li>Installing hpack (3.0.0)</li>
+<li>Installing hyperframe (5.2.0)</li>
+<li>Installing certifi (2020.6.20)</li>
+<li>Installing chardet (3.0.4)</li>
+<li>Installing h11 (0.9.0)</li>
+<li>Installing h2 (3.2.0)</li>
+<li>Installing hstspreload (2020.6.23)</li>
+<li>Installing idna (2.9)</li>
+<li>Installing rfc3986 (1.4.0)</li>
+<li>Installing sniffio (1.1.0)</li>
+<li>Installing urllib3 (1.25.9)</li>
+<li>Installing aiofiles (0.5.0)</li>
+<li>Installing httptools (0.1.1)</li>
+<li>Installing httpx (0.11.1)</li>
+<li>Installing multidict (4.7.6)</li>
+<li>Installing ujson (3.0.0)</li>
+<li>Installing uvloop (0.14.0)</li>
+<li>Installing websockets (8.1)</li>
+<li>Installing pyparsing (2.4.7)</li>
+<li>Installing sanic (20.3.0)</li>
+<li>Installing six (1.15.0)</li>
+<li>Installing async-timeout (3.0.1)</li>
+<li>Installing attrs (19.3.0)</li>
+<li>Installing hiredis (1.0.1)</li>
+<li>Installing more-itertools (8.4.0)</li>
+<li>Installing packaging (20.4)</li>
+<li>Installing pluggy (0.13.1)</li>
+<li>Installing py (1.9.0)</li>
+<li>Installing sanic-plugins-framework (0.9.2)</li>
+<li>Installing wcwidth (0.2.5)</li>
+<li>Installing yarl (1.4.2)</li>
+<li>Installing aiohttp (3.6.2)</li>
+<li>Installing aioredis (1.3.1)</li>
+<li>Installing pymongo (3.10.1)</li>
+<li>Installing pytest (5.4.3)</li>
+<li>Installing redis (3.5.3)</li>
+<li>Installing requests (2.24.0)</li>
+<li>Installing sanic-cors (0.10.0.post3)</li>
+<li>Installing xmltodict (0.12.0)</li>
+<li>Installing lingxi (0.1.0)</li>
+</ul>
+<hr>
+<p>看看效果：<br>~/open_source/lingxi » poetry run python –version                                                           pd@pd-mp<br>Python 3.8.2</p>
+<hr>
+<p>~/open_source/lingxi » poetry run pip list                                                                   pd@pd-mp<br>Package                 Version      Location</p>
+<hr>
+<p>aiofiles                0.5.0<br>aiohttp                 3.6.2<br>aioredis                1.3.1<br>async-timeout           3.0.1<br>attrs                   19.3.0<br>certifi                 2020.6.20<br>chardet                 3.0.4<br>h11                     0.9.0<br>h2                      3.2.0<br>hiredis                 1.0.1<br>hpack                   3.0.0<br>hstspreload             2020.6.23<br>httptools               0.1.1<br>httpx                   0.11.1<br>hyperframe              5.2.0<br>idna                    2.9<br>lingxi                  0.1.0        /Users/pd/open_source/lingxi<br>more-itertools          8.4.0<br>multidict               4.7.6<br>packaging               20.4<br>pip                     19.2.3<br>pluggy                  0.13.1<br>py                      1.9.0<br>pymongo                 3.10.1<br>pyparsing               2.4.7<br>pytest                  5.4.3<br>redis                   3.5.3<br>requests                2.24.0<br>rfc3986                 1.4.0<br>sanic                   20.3.0<br>Sanic-Cors              0.10.0.post3<br>Sanic-Plugins-Framework 0.9.2<br>setuptools              41.2.0<br>six                     1.15.0<br>sniffio                 1.1.0<br>ujson                   3.0.0<br>urllib3                 1.25.9<br>uvloop                  0.14.0<br>wcwidth                 0.2.5<br>websockets              8.1<br>xmltodict               0.12.0<br>yarl                    1.4.2<br>WARNING: You are using pip version 19.2.3, however version 20.1.1 is available.<br>You should consider upgrading via the ‘pip install –upgrade pip’ command.</p>
+<hr>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/22/%E4%B8%80%E4%B8%AA%E5%90%88%E6%A0%BC%E7%9A%84%E7%BC%93%E5%AD%98%E7%AE%A1%E7%90%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -195,7 +435,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2020-06-22 23:10:01 / 修改时间：23:54:58" itemprop="dateCreated datePublished" datetime="2020-06-22T23:10:01+08:00">2020-06-22</time>
+              <time title="创建时间：2020-06-22 23:10:01 / 修改时间：23:58:44" itemprop="dateCreated datePublished" datetime="2020-06-22T23:10:01+08:00">2020-06-22</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -235,8 +475,8 @@
 <ol>
 <li><p>首先我们明确的知道，可以通过await app[‘cache_group’].refresh(‘xxx_key’)来刷新xxx_key代表的某表</p>
 </li>
-<li><p>其次问题就是如果让在多太机器的各个进程都能够能够及时的知道xxx_key代表的数据库表发生了修改</p>
-<p>这里我同样还是使用了基于redis pub/sub的方式进行，因为首先合适的修改方式肯定不是手动去直接改数据库（风险太高），那么别的方式肯定是很容易同时触发一个pub xxx_key到相应channel的，这样每个进行收到后再调用await app[‘cache_group’].refresh(‘xxx_key’)即可完成“及时”的刷新</p>
+<li><p>其次问题就是如果让在多台机器的各个进程都能够能够及时的知道xxx_key代表的数据库表发生了修改</p>
+<p>这里我同样还是使用了基于redis pub/sub的方式进行，因为首先合适的修改方式肯定不是手动去直接改数据库（风险太高），那么别的方式肯定是很容易同时触发一个pub xxx_key到相应channel的，这样每个进程收到后再调用await app[‘cache_group’].refresh(‘xxx_key’)即可完成“及时”的刷新</p>
 </li>
 </ol>
 
@@ -626,7 +866,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-count">6</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -635,7 +875,7 @@
         <span class="site-state-item-name">分类</span>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-count">6</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>

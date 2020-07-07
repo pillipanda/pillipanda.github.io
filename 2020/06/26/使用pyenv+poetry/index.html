@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="~&#x2F;open_source » pyenv global                                                                                 pd@pd-mpsystem  ~&#x2F;open_source » pyenv version">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用pyenv+poetry">
+<meta property="og:url" content="http://yoursite.com/2020/06/26/%E4%BD%BF%E7%94%A8pyenv+poetry/index.html">
+<meta property="og:site_name" content="pd">
+<meta property="og:description" content="~&#x2F;open_source » pyenv global                                                                                 pd@pd-mpsystem  ~&#x2F;open_source » pyenv version">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-06-26T01:17:21.741Z">
+<meta property="article:modified_time" content="2020-06-26T01:17:21.747Z">
+<meta property="article:author" content="-_-">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content=" Go">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2020/06/26/%E4%BD%BF%E7%94%A8pyenv+poetry/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>使用pyenv+poetry | pd</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">pd</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">一瞥之见</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/26/%E4%BD%BF%E7%94%A8pyenv+poetry/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="-_-">
+      <meta itemprop="description" content="15652616715">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="pd">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          使用pyenv+poetry
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-06-26 09:17:21" itemprop="dateCreated datePublished" datetime="2020-06-26T09:17:21+08:00">2020-06-26</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>~/open_source » pyenv global                                                                                 pd@pd-mp<br>system</p>
+<hr>
+<p>~/open_source » pyenv version                                                                                pd@pd-mp<br>system (set by /Users/pd/.pyenv/version)</p>
+<hr>
+<p>~/open_source » pyenv versions                                                                               pd@pd-mp</p>
+<ul>
+<li>system (set by /Users/pd/.pyenv/version)<br>3.8.2</li>
+</ul>
+<hr>
+<h2 id="open-source-»-pyenv-global-3-8-2-pd-pd-mp"><a href="#open-source-»-pyenv-global-3-8-2-pd-pd-mp" class="headerlink" title="~/open_source » pyenv global 3.8.2                                                                           pd@pd-mp"></a>~/open_source » pyenv global 3.8.2                                                                           pd@pd-mp</h2><p>~/open_source » pyenv global                                                                                 pd@pd-mp<br>3.8.2</p>
+<hr>
+<p>~/open_source » poetry new lingxi                                                                            pd@pd-mp<br>Created package lingxi in lingxi</p>
+<hr>
+<h2 id="open-source-»-cd-lingxi-pd-pd-mp"><a href="#open-source-»-cd-lingxi-pd-pd-mp" class="headerlink" title="~/open_source » cd lingxi                                                                                    pd@pd-mp"></a>~/open_source » cd lingxi                                                                                    pd@pd-mp</h2><p>~/open_source/lingxi » python –version                                                                      pd@pd-mp<br>Python 3.8.2</p>
+<hr>
+<p>~/open_source/lingxi » poetry local 3.8.2                                                                    pd@pd-mp<br>The command “local” is not defined.</p>
+<hr>
+<h2 id="open-source-lingxi-»-pyenv-local-3-8-2-pd-pd-mp"><a href="#open-source-lingxi-»-pyenv-local-3-8-2-pd-pd-mp" class="headerlink" title="~/open_source/lingxi » pyenv local 3.8.2                                                                     pd@pd-mp"></a>~/open_source/lingxi » pyenv local 3.8.2                                                                     pd@pd-mp</h2><p>~/open_source/lingxi » python –version                                                                      pd@pd-mp<br>Python 3.8.2</p>
+<hr>
+<h2 id="open-source-lingxi-»-vim-pyproject-toml-pd-pd-mp"><a href="#open-source-lingxi-»-vim-pyproject-toml-pd-pd-mp" class="headerlink" title="~/open_source/lingxi » vim pyproject.toml                                                                    pd@pd-mp"></a>~/open_source/lingxi » vim pyproject.toml                                                                    pd@pd-mp</h2><p>~/open_source/lingxi » cat pyproject.toml| grep python                                                       pd@pd-mp<br>python = “^3.8”</p>
+<p>添加已有项目需要的依赖进入【tool.poetry.dependencies】(当然也可以通过poetry add package_name进行安装)<br>[tool.poetry.dependencies]<br>python = “^3.8”<br>sanic = “^20.3.0”<br>Sanic-Cors = “^0.10.0”<br>xmltodict = “^0.12.0”<br>pymongo = “^3.10.1”<br>aioredis = “^1.3.1”<br>aiohttp = “^3.6.2”</p>
+<p>在第一次使用poetry install时会自动为当前项目创建虚拟环境：<br>~/open_source/lingxi » poetry install                                                                        pd@pd-mp<br>Creating virtualenv lingxi-vUuuTXV–py3.8 in /Users/pd/Library/Caches/pypoetry/virtualenvs<br>Updating dependencies<br>Resolving dependencies… (82.2s)</p>
+<p>Writing lock file</p>
+<p>Package operations: 39 installs, 0 updates, 0 removals</p>
+<ul>
+<li>Installing hpack (3.0.0)</li>
+<li>Installing hyperframe (5.2.0)</li>
+<li>Installing certifi (2020.6.20)</li>
+<li>Installing chardet (3.0.4)</li>
+<li>Installing h11 (0.9.0)</li>
+<li>Installing h2 (3.2.0)</li>
+<li>Installing hstspreload (2020.6.23)</li>
+<li>Installing idna (2.9)</li>
+<li>Installing rfc3986 (1.4.0)</li>
+<li>Installing sniffio (1.1.0)</li>
+<li>Installing urllib3 (1.25.9)</li>
+<li>Installing aiofiles (0.5.0)</li>
+<li>Installing httptools (0.1.1)</li>
+<li>Installing httpx (0.11.1)</li>
+<li>Installing multidict (4.7.6)</li>
+<li>Installing ujson (3.0.0)</li>
+<li>Installing uvloop (0.14.0)</li>
+<li>Installing websockets (8.1)</li>
+<li>Installing pyparsing (2.4.7)</li>
+<li>Installing sanic (20.3.0)</li>
+<li>Installing six (1.15.0)</li>
+<li>Installing async-timeout (3.0.1)</li>
+<li>Installing attrs (19.3.0)</li>
+<li>Installing hiredis (1.0.1)</li>
+<li>Installing more-itertools (8.4.0)</li>
+<li>Installing packaging (20.4)</li>
+<li>Installing pluggy (0.13.1)</li>
+<li>Installing py (1.9.0)</li>
+<li>Installing sanic-plugins-framework (0.9.2)</li>
+<li>Installing wcwidth (0.2.5)</li>
+<li>Installing yarl (1.4.2)</li>
+<li>Installing aiohttp (3.6.2)</li>
+<li>Installing aioredis (1.3.1)</li>
+<li>Installing pymongo (3.10.1)</li>
+<li>Installing pytest (5.4.3)</li>
+<li>Installing redis (3.5.3)</li>
+<li>Installing requests (2.24.0)</li>
+<li>Installing sanic-cors (0.10.0.post3)</li>
+<li>Installing xmltodict (0.12.0)</li>
+<li>Installing lingxi (0.1.0)</li>
+</ul>
+<hr>
+<p>看看效果：<br>~/open_source/lingxi » poetry run python –version                                                           pd@pd-mp<br>Python 3.8.2</p>
+<hr>
+<p>~/open_source/lingxi » poetry run pip list                                                                   pd@pd-mp<br>Package                 Version      Location</p>
+<hr>
+<p>aiofiles                0.5.0<br>aiohttp                 3.6.2<br>aioredis                1.3.1<br>async-timeout           3.0.1<br>attrs                   19.3.0<br>certifi                 2020.6.20<br>chardet                 3.0.4<br>h11                     0.9.0<br>h2                      3.2.0<br>hiredis                 1.0.1<br>hpack                   3.0.0<br>hstspreload             2020.6.23<br>httptools               0.1.1<br>httpx                   0.11.1<br>hyperframe              5.2.0<br>idna                    2.9<br>lingxi                  0.1.0        /Users/pd/open_source/lingxi<br>more-itertools          8.4.0<br>multidict               4.7.6<br>packaging               20.4<br>pip                     19.2.3<br>pluggy                  0.13.1<br>py                      1.9.0<br>pymongo                 3.10.1<br>pyparsing               2.4.7<br>pytest                  5.4.3<br>redis                   3.5.3<br>requests                2.24.0<br>rfc3986                 1.4.0<br>sanic                   20.3.0<br>Sanic-Cors              0.10.0.post3<br>Sanic-Plugins-Framework 0.9.2<br>setuptools              41.2.0<br>six                     1.15.0<br>sniffio                 1.1.0<br>ujson                   3.0.0<br>urllib3                 1.25.9<br>uvloop                  0.14.0<br>wcwidth                 0.2.5<br>websockets              8.1<br>xmltodict               0.12.0<br>yarl                    1.4.2<br>WARNING: You are using pip version 19.2.3, however version 20.1.1 is available.<br>You should consider upgrading via the ‘pip install –upgrade pip’ command.</p>
+<hr>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/06/22/%E4%B8%80%E4%B8%AA%E5%90%88%E6%A0%BC%E7%9A%84%E7%BC%93%E5%AD%98%E7%AE%A1%E7%90%86/" rel="prev" title="一个合格的缓存管理">
+      <i class="fa fa-chevron-left"></i> 一个合格的缓存管理
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/07/07/%E8%AE%B0%E5%9F%BA%E4%BA%8Eredis%E5%81%9A%E9%A2%91%E6%AC%A1%E9%99%90%E5%88%B6%E9%81%87%E5%88%B0%E7%9A%84bug/" rel="next" title="记基于redis做频次限制遇到的bug">
+      记基于redis做频次限制遇到的bug <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#open-source-»-pyenv-global-3-8-2-pd-pd-mp"><span class="nav-number">1.</span> <span class="nav-text">~&#x2F;open_source » pyenv global 3.8.2                                                                           pd@pd-mp</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#open-source-»-cd-lingxi-pd-pd-mp"><span class="nav-number">2.</span> <span class="nav-text">~&#x2F;open_source » cd lingxi                                                                                    pd@pd-mp</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#open-source-lingxi-»-pyenv-local-3-8-2-pd-pd-mp"><span class="nav-number">3.</span> <span class="nav-text">~&#x2F;open_source&#x2F;lingxi » pyenv local 3.8.2                                                                     pd@pd-mp</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#open-source-lingxi-»-vim-pyproject-toml-pd-pd-mp"><span class="nav-number">4.</span> <span class="nav-text">~&#x2F;open_source&#x2F;lingxi » vim pyproject.toml                                                                    pd@pd-mp</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">-_-</p>
+  <div class="site-description" itemprop="description">15652616715</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">-_-</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'edf9b4cf38817a8e9705',
+      clientSecret: 'a9e7395b37100257f052db822d40873b9fca18a5',
+      repo: 'pillipanda.github.io',
+      owner: 'pillipanda',
+      admin: ['pillipanda'],
+      id: 'a79abcbe3a0c150a980163ddb2cf3fdf',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>
