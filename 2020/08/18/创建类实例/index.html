@@ -46,20 +46,25 @@
   };
 </script>
 
-  <meta name="description" content="已完成  深入理解计算机系统 时间：2020-02 ～ 2020-06 推荐系数：五星 难易度：高 一句话总结：完整的了解程序执行周期涉及到的软&#x2F;硬件构成及其为了提高效率引入的各类机制,同时指导了代码层面如何优化以获取更高性能 准备整理中     进行中  冒号课堂 时间：2020-05 ～  推荐系数：五星 难易度：较高   The Go Programming Language 时间：202">
+  <meta name="description" content="通过一定的参数创建类实例的演进过程 构造器 [如new和__init__() ]存在的问题：可能一个类能够使用多种初始化的方式如可以使用两种方法描述一个点的位置：笛卡尔坐标系 与 极坐标系 Point(double x, double y) Point(double r, double theta) 静态方法  优点 不同参数初始化实例在类Point中写两个对应的静态方法用于创建即可、使用时如下：">
 <meta property="og:type" content="article">
-<meta property="og:title" content="读书记录与规划">
-<meta property="og:url" content="http://yoursite.com/2020/06/21/%E8%AF%BB%E4%B9%A6%E8%AE%B0%E5%BD%95%E4%B8%8E%E8%A7%84%E5%88%92/index.html">
+<meta property="og:title" content="创建类实例">
+<meta property="og:url" content="http://yoursite.com/2020/08/18/%E5%88%9B%E5%BB%BA%E7%B1%BB%E5%AE%9E%E4%BE%8B/index.html">
 <meta property="og:site_name" content="pd">
-<meta property="og:description" content="已完成  深入理解计算机系统 时间：2020-02 ～ 2020-06 推荐系数：五星 难易度：高 一句话总结：完整的了解程序执行周期涉及到的软&#x2F;硬件构成及其为了提高效率引入的各类机制,同时指导了代码层面如何优化以获取更高性能 准备整理中     进行中  冒号课堂 时间：2020-05 ～  推荐系数：五星 难易度：较高   The Go Programming Language 时间：202">
+<meta property="og:description" content="通过一定的参数创建类实例的演进过程 构造器 [如new和__init__() ]存在的问题：可能一个类能够使用多种初始化的方式如可以使用两种方法描述一个点的位置：笛卡尔坐标系 与 极坐标系 Point(double x, double y) Point(double r, double theta) 静态方法  优点 不同参数初始化实例在类Point中写两个对应的静态方法用于创建即可、使用时如下：">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2020-06-21T14:41:36.000Z">
-<meta property="article:modified_time" content="2020-07-27T15:24:55.892Z">
+<meta property="og:image" content="http://yoursite.com/images/easy_fac.png">
+<meta property="og:image" content="http://yoursite.com/images/factory_method.png">
+<meta property="og:image" content="http://yoursite.com/images/abstract_factory.png">
+<meta property="article:published_time" content="2020-08-17T17:01:01.000Z">
+<meta property="article:modified_time" content="2020-08-17T16:06:02.032Z">
 <meta property="article:author" content="-_-">
-<meta property="article:tag" content="读书">
+<meta property="article:tag" content="设计模式">
+<meta property="article:tag" content="编程">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/easy_fac.png">
 
-<link rel="canonical" href="http://yoursite.com/2020/06/21/%E8%AF%BB%E4%B9%A6%E8%AE%B0%E5%BD%95%E4%B8%8E%E8%A7%84%E5%88%92/">
+<link rel="canonical" href="http://yoursite.com/2020/08/18/%E5%88%9B%E5%BB%BA%E7%B1%BB%E5%AE%9E%E4%BE%8B/">
 
 
 <script id="page-configurations">
@@ -71,7 +76,7 @@
   };
 </script>
 
-  <title>读书记录与规划 | pd</title>
+  <title>创建类实例 | pd</title>
   
 
 
@@ -171,7 +176,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/21/%E8%AF%BB%E4%B9%A6%E8%AE%B0%E5%BD%95%E4%B8%8E%E8%A7%84%E5%88%92/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/08/18/%E5%88%9B%E5%BB%BA%E7%B1%BB%E5%AE%9E%E4%BE%8B/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -184,7 +189,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          读书记录与规划
+          创建类实例
         </h1>
 
         <div class="post-meta">
@@ -193,26 +198,9 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
+              
 
-              <time title="创建时间：2020-06-21 22:41:36" itemprop="dateCreated datePublished" datetime="2020-06-21T22:41:36+08:00">2020-06-21</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-07-27 23:24:55" itemprop="dateModified" datetime="2020-07-27T23:24:55+08:00">2020-07-27</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%94%9F%E6%B4%BB/" itemprop="url" rel="index">
-                    <span itemprop="name">生活</span>
-                  </a>
-                </span>
+              <time title="创建时间：2020-08-18 01:01:01 / 修改时间：00:06:02" itemprop="dateCreated datePublished" datetime="2020-08-18T01:01:01+08:00">2020-08-18</time>
             </span>
 
           
@@ -226,39 +214,58 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <ul>
-<li><p>已完成</p>
+        <h3 id="通过一定的参数创建类实例的演进过程"><a href="#通过一定的参数创建类实例的演进过程" class="headerlink" title="通过一定的参数创建类实例的演进过程"></a>通过一定的参数创建类实例的演进过程</h3><ol>
+<li><p>构造器 [如new和__init__() ]<br>存在的问题：可能一个类能够使用多种初始化的方式<br>如可以使用两种方法描述一个点的位置：笛卡尔坐标系 与 极坐标系</p>
+<pre><code>Point(double x, double y)
+Point(double r, double theta)</code></pre></li>
+<li><p>静态方法</p>
 <ul>
-<li><a href="https://book.douban.com/subject/5333562/" target="_blank" rel="noopener">深入理解计算机系统</a><ul>
-<li>时间：2020-02 ～ 2020-06</li>
-<li>推荐系数：五星</li>
-<li>难易度：高</li>
-<li>一句话总结：完整的了解程序执行周期涉及到的软/硬件构成及其为了提高效率引入的各类机制,同时指导了代码层面如何优化以获取更高性能</li>
-<li>准备整理中</li>
+<li>优点<ul>
+<li>不同参数初始化实例<br>在类Point中写两个对应的静态方法用于创建即可、使用时如下：<br>​    Point p1 = Ponit.cartesian(1, 2)<br>​    Point p2 = Point.polar(1.0, Mth.PI/3)</li>
+<li>不同调用方式<br>如python里不能await __init__方法、但可以通过await一个静态async方法实现</li>
 </ul>
 </li>
 </ul>
 </li>
-<li><p>进行中</p>
+<li><p>简单工厂/静态工厂 模式</p>
 <ul>
-<li><a href="https://book.douban.com/subject/4031906/" target="_blank" rel="noopener">冒号课堂</a><ul>
-<li>时间：2020-05 ～ </li>
-<li>推荐系数：五星</li>
-<li>难易度：较高</li>
+<li>优点：<ul>
+<li><strong>类型隐藏</strong><br>使用构造方法时、明确的返回对应调用类型的实例、这就违背了<strong>面向接口编程</strong>的原则<br>相反使用静态工厂方法的时候就可以返回一个满足对应接口的对象而不用透露具体的对象给客户（从而此类型可以是公开/非公开/甚至动态加载的）<br>如：假设一个规则解析的类群（Parser &lt;— JsonParser、XmlParser, …）,则此时能够如下进行解藕</li>
 </ul>
 </li>
-<li><a href="https://book.douban.com/subject/26337545/" target="_blank" rel="noopener">The Go Programming Language</a><ul>
-<li>时间：2020-07 ～ </li>
+<li>对应UML图<br><img src="/images/easy_fac.png" alt="easy_factory"></li>
+<li>缺点：<ul>
+<li>工厂类的职责成为了对接外部参数并且依据这些参数进行创建具体类的职责，所有的类的创建逻辑都集中在了这里面，从而导致在添加新的类的时候一定需要修改此创建方法（违背开闭原则）；特别需要注意的是在发展的过程中，有可能出现不同具体类的创建依赖不同条件的情况，此会导致这唯一工厂类的逻辑复杂并降低可维护性（同时说明在一开始就应该在接口设计上考虑清楚）</li>
 </ul>
 </li>
 </ul>
 </li>
-<li><p>准备读</p>
+<li><p>工厂方法</p>
 <ul>
-<li><a href="https://book.douban.com/subject/30280001/" target="_blank" rel="noopener">计算机网络 自顶向下方法</a></li>
+<li>核心思维：核心工厂类对外不变，还是提供相同的输入输出；对内新加工厂子类，具体的类型的创建延迟到工厂子类来完成，这样就解藕了上面提到的不同类的创建可能依赖不同条件的情况</li>
+<li>举例：假设我们要可以选择初始化的选择是一些key-val数据库（redis、leveldb、rocksdb…）,然后通过传入的参数进行返回对应的连接。<br><img src="/images/factory_method.png" alt="factory_methos"></li>
+<li>优点<ul>
+<li>从最对外的NosqlClientFactory中传递可能多种参数到达工厂子类后、子类可以只获取并处理自己需要的参数、避免了NosqlClientFactory.createConn中日益增长且纷繁杂乱的参数处理</li>
+<li>我这里特意为Nosql的添加了create_conn方法，是对于每种Nosql DB我们都明确的知道需要哪些参数来创建、故放到自己的类下面进行维护是更为清晰合理的，而此时对应的子类XxxFactory就只需要构造出这样的参数并调用之就可以了，这样的好处就是假设别的地方又需要创建Nosql客户端时（假设要创建Redis客户端），就可以自己依据自己这边的输入进行构造Redis.create_conn需要的参数进行调用。这样就分离了变化(创建核心参数 与 变化的不同地方不同输入参数的有效化处理过程)</li>
+</ul>
+</li>
+<li>缺点<ul>
+<li>需要创建的子factory类太多</li>
 </ul>
 </li>
 </ul>
+</li>
+<li><p>抽象工厂</p>
+<ul>
+<li>核心要点：与工厂方法的替换粒度相比，抽象工厂的替换粒度要大很多，往往是一整套的替换情景存在时才使用</li>
+<li>举例：假设有一个产品，其分内网使用与外网使用、而其使用到的组件有关系型数据库以及消息队列组件，假设其内网使用的全部是自研的产品如关系型数据库A与消息队列组件A，而外网使用的则是通用的mysql和ActiveMQ，那么就会出现实例化时需要实例化不同的族的问题</li>
+<li>其UML如下，特别别忘记核心与工厂方法的对比是：工厂方法里的主Factory是实际类，是接受参数并且负责派发到对应子类的；而这里的是抽象类或者接口类<br><img src="/images/abstract_factory.png" alt="abstract_factory"></li>
+</ul>
+</li>
+</ol>
+<h4 id="有启发的文章"><a href="#有启发的文章" class="headerlink" title="有启发的文章"></a>有启发的文章</h4><blockquote>
+<p>《冒号课堂》第13章第1节<br><a href="https://design-patterns.readthedocs.io/zh_CN/latest/creational_patterns/creational.html" target="_blank" rel="noopener">创建型模式</a></p>
+</blockquote>
 
     </div>
 
@@ -268,7 +275,8 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/%E8%AF%BB%E4%B9%A6/" rel="tag"># 读书</a>
+              <a href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag"># 设计模式</a>
+              <a href="/tags/%E7%BC%96%E7%A8%8B/" rel="tag"># 编程</a>
           </div>
 
         
@@ -277,13 +285,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/06/21/%E8%B0%88%E8%B0%88%E8%B0%83%E7%94%A8%E8%BF%94%E5%9B%9E/" rel="prev" title="谈谈调用返回">
-      <i class="fa fa-chevron-left"></i> 谈谈调用返回
+    <a href="/2020/07/07/%E8%AE%B0%E5%9F%BA%E4%BA%8Eredis%E5%81%9A%E9%A2%91%E6%AC%A1%E9%99%90%E5%88%B6%E9%81%87%E5%88%B0%E7%9A%84bug/" rel="prev" title="记基于redis做频次限制遇到的bug">
+      <i class="fa fa-chevron-left"></i> 记基于redis做频次限制遇到的bug
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2020/06/22/%E4%B8%80%E4%B8%AA%E5%90%88%E6%A0%BC%E7%9A%84%E7%BC%93%E5%AD%98%E7%AE%A1%E7%90%86/" rel="next" title="一个合格的缓存管理">
-      一个合格的缓存管理 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -344,6 +349,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#通过一定的参数创建类实例的演进过程"><span class="nav-number">1.</span> <span class="nav-text">通过一定的参数创建类实例的演进过程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#有启发的文章"><span class="nav-number">1.1.</span> <span class="nav-text">有启发的文章</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -465,7 +471,7 @@ NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
       repo: 'pillipanda.github.io',
       owner: 'pillipanda',
       admin: ['pillipanda'],
-      id: '9026181852fb386ff5472be59e59c6e7',
+      id: '8e4b3040d751c91bb716d694531676fe',
         language: 'zh-CN',
       distractionFreeMode: true
     });
