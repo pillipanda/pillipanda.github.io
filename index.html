@@ -193,10 +193,16 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2020-08-18 01:01:01 / 修改时间：00:06:02" itemprop="dateCreated datePublished" datetime="2020-08-18T01:01:01+08:00">2020-08-18</time>
+              <time title="创建时间：2020-08-18 01:01:01" itemprop="dateCreated datePublished" datetime="2020-08-18T01:01:01+08:00">2020-08-18</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-08-22 00:59:49" itemprop="dateModified" datetime="2020-08-22T00:59:49+08:00">2020-08-22</time>
+              </span>
 
           
 
@@ -209,38 +215,31 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h3 id="通过一定的参数创建类实例的演进过程"><a href="#通过一定的参数创建类实例的演进过程" class="headerlink" title="通过一定的参数创建类实例的演进过程"></a>通过一定的参数创建类实例的演进过程</h3><ol>
-<li><p>构造器 [如new和__init__() ]<br>存在的问题：可能一个类能够使用多种初始化的方式<br>如可以使用两种方法描述一个点的位置：笛卡尔坐标系 与 极坐标系</p>
-<pre><code>Point(double x, double y)
-Point(double r, double theta)</code></pre></li>
-<li><p>静态方法</p>
-<ul>
+          <h3 id="结构说明"><a href="#结构说明" class="headerlink" title="结构说明"></a>结构说明</h3><p>下面将从简单到复杂的说明，实例化类有哪些方式、会说明每种方式的优势和弊端是什么。不少方式会提供UML图说明，如果不清楚的一定需要先搞清楚UML图中各个连线代表的含义再往下看</p>
+<h3 id="创建类实例的演进过程"><a href="#创建类实例的演进过程" class="headerlink" title="创建类实例的演进过程"></a>创建类实例的演进过程</h3><h4 id="构造器-如new和-init"><a href="#构造器-如new和-init" class="headerlink" title="构造器 [如new和__init__() ]"></a>构造器 [如new和__init__() ]</h4><p>   存在的问题：可能一个类能够使用多种初始化的方式<br>   如可以使用两种方法描述一个点的位置：笛卡尔坐标系 与 极坐标系<br>       Point(double x, double y)<br>       Point(double r, double theta)</p>
+<h4 id="静态方法"><a href="#静态方法" class="headerlink" title="静态方法"></a>静态方法</h4><ul>
 <li>优点<ul>
 <li>不同参数初始化实例<br>在类Point中写两个对应的静态方法用于创建即可、使用时如下：<br>​    Point p1 = Ponit.cartesian(1, 2)<br>​    Point p2 = Point.polar(1.0, Mth.PI/3)</li>
 <li>不同调用方式<br>如python里不能await __init__方法、但可以通过await一个静态async方法实现</li>
 </ul>
 </li>
 </ul>
-</li>
-<li><p>简单工厂/静态工厂 模式</p>
-<ul>
+<h4 id="简单工厂-静态工厂-模式"><a href="#简单工厂-静态工厂-模式" class="headerlink" title="简单工厂/静态工厂 模式"></a>简单工厂/静态工厂 模式</h4><ul>
 <li>优点：<ul>
 <li><strong>类型隐藏</strong><br>使用构造方法时、明确的返回对应调用类型的实例、这就违背了<strong>面向接口编程</strong>的原则<br>相反使用静态工厂方法的时候就可以返回一个满足对应接口的对象而不用透露具体的对象给客户（从而此类型可以是公开/非公开/甚至动态加载的）<br>如：假设一个规则解析的类群（Parser &lt;— JsonParser、XmlParser, …）,则此时能够如下进行解藕</li>
 </ul>
 </li>
 <li>对应UML图<br><img src="/images/easy_fac.png" alt="easy_factory"></li>
 <li>缺点：<ul>
-<li>工厂类的职责成为了对接外部参数并且依据这些参数进行创建具体类的职责，所有的类的创建逻辑都集中在了这里面，从而导致在添加新的类的时候一定需要修改此创建方法（违背开闭原则）；特别需要注意的是在发展的过程中，有可能出现不同具体类的创建依赖不同条件的情况，此会导致这唯一工厂类的逻辑复杂并降低可维护性（同时说明在一开始就应该在接口设计上考虑清楚）</li>
+<li>工厂类的职责成为了对接外部参数并且依据这些参数进行创建具体类的职责，所有的类的创建逻辑都集中在了这里面，从而导致在添加新的类的时候一定需要修改此创建方法（违背开闭原则）；特别需要注意的是在发展的过程中，有可能出现不同具体类的创建依赖不同条件的情况，此会导致这唯一工厂类的逻辑复杂并降低可维护性</li>
 </ul>
 </li>
 </ul>
-</li>
-<li><p>工厂方法</p>
-<ul>
-<li>核心思维：核心工厂类对外不变，还是提供相同的输入输出；对内新加工厂子类，具体的类型的创建延迟到工厂子类来完成，这样就解藕了上面提到的不同类的创建可能依赖不同条件的情况</li>
+<h4 id="工厂方法"><a href="#工厂方法" class="headerlink" title="工厂方法"></a>工厂方法</h4><ul>
+<li>核心思维：新加抽象工厂约束具体工厂对外提供的接口、并且将具体类型的创建延迟到工厂子类来完成，这样就解藕了上面提到的不同初始化具体类时的逻辑太过于纠缠到一个方法内可维护性不高的问题</li>
 <li>举例：假设我们要可以选择初始化的选择是一些key-val数据库（redis、leveldb、rocksdb…）,然后通过传入的参数进行返回对应的连接。<br><img src="/images/factory_method.png" alt="factory_methos"></li>
 <li>优点<ul>
-<li>从最对外的NosqlClientFactory中传递可能多种参数到达工厂子类后、子类可以只获取并处理自己需要的参数、避免了NosqlClientFactory.createConn中日益增长且纷繁杂乱的参数处理</li>
+<li>保持了NosqlClientFactoryMap.get_conn方法中的简洁，其只做具体NosqlClientFactory实现类的定位以及参数透传，具体各个实现类要用哪些参数进行初始化链接便自己内部进行相关逻辑处理</li>
 <li>我这里特意为Nosql的添加了create_conn方法，是对于每种Nosql DB我们都明确的知道需要哪些参数来创建、故放到自己的类下面进行维护是更为清晰合理的，而此时对应的子类XxxFactory就只需要构造出这样的参数并调用之就可以了，这样的好处就是假设别的地方又需要创建Nosql客户端时（假设要创建Redis客户端），就可以自己依据自己这边的输入进行构造Redis.create_conn需要的参数进行调用。这样就分离了变化(创建核心参数 与 变化的不同地方不同输入参数的有效化处理过程)</li>
 </ul>
 </li>
@@ -249,16 +248,14 @@ Point(double r, double theta)</code></pre></li>
 </ul>
 </li>
 </ul>
-</li>
-<li><p>抽象工厂</p>
-<ul>
-<li>核心要点：与工厂方法的替换粒度相比，抽象工厂的替换粒度要大很多，往往是一整套的替换情景存在时才使用</li>
-<li>举例：假设有一个产品，其分内网使用与外网使用、而其使用到的组件有关系型数据库以及消息队列组件，假设其内网使用的全部是自研的产品如关系型数据库A与消息队列组件A，而外网使用的则是通用的mysql和ActiveMQ，那么就会出现实例化时需要实例化不同的族的问题</li>
-<li>其UML如下，特别别忘记核心与工厂方法的对比是：工厂方法里的主Factory是实际类，是接受参数并且负责派发到对应子类的；而这里的是抽象类或者接口类<br><img src="/images/abstract_factory.png" alt="abstract_factory"></li>
+<h4 id="抽象工厂"><a href="#抽象工厂" class="headerlink" title="抽象工厂"></a>抽象工厂</h4><ul>
+<li>核心要点：主要用于解决“隔离域”问题，在工厂方法中，用户调用外层工厂NosqlClientFactoryMap是有权限创建任意一种具体Nosql产品的，并没有从NosqlClientFactoryMap级别进行隔离，而抽象工厂要做的就是从最外界进行隔离，让不同“环境”的用户调用的最外层工厂类只能创建到其特定被赋予的组件</li>
+<li>举例2：假设有一个产品，其分内网使用与外网使用、而其使用到的组件有关系型数据库以及消息队列组件，假设其内网使用的全部是自研的产品如关系型数据库A与消息队列组件A，而外网使用的则是通用的mysql和ActiveMQ，那么就会出现实例化时需要实例化不同的族的问题。从图中可以看到，内网用户只能调用InnerFactory，而后其如果想获取RDB则在调用对应的createRDB获取，同理当需要使用时候调用createMQ，这样就从最外层的创建者做了隔离</li>
+<li>其UML如下<br><img src="/images/abstract_factory.png" alt="abstract_factory"></li>
+<li>补充：“隔离域”不要只想到环境问题，还有比如类似假设一个系统的用户相关使用的是一组资源类型、而交易相关的使用的是另一租资源类型</li>
+<li>补充：一个思考是其实还可以将工厂方法也揉入进来，这里假设内网用户可创建的RDB也有多种选择，这样在InnerFactory这个层级下又可以添加子类工厂进行将实例化推迟到子类工厂</li>
 </ul>
-</li>
-</ol>
-<h4 id="有启发的文章"><a href="#有启发的文章" class="headerlink" title="有启发的文章"></a>有启发的文章</h4><blockquote>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><blockquote>
 <p>《冒号课堂》第13章第1节<br><a href="https://design-patterns.readthedocs.io/zh_CN/latest/creational_patterns/creational.html" target="_blank" rel="noopener">创建型模式</a></p>
 </blockquote>
 
