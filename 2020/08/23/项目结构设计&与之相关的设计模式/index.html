@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="写在前面如果不知道怎么看UML类图的请不用往下看了，其对于理解非常重要，请先会读后再继续看 系统构成 与 系统结构系统构成系统的构成结构、主要元素有层（layer）与 区（partition），层是按照抽象层次进行的水平划分、是经过抽象提取出来的，高层建立与低层之上（单向依赖）；而区是同一层中的垂直划分（同层的区是双向合作关系）；进入区里面再到包（package层次），最后具体到类（class）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="系统构成 与 结构型，以及结构型相关的7个设计模式">
+<meta property="og:url" content="http://yoursite.com/2020/08/23/%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84%E8%AE%BE%E8%AE%A1&%E4%B8%8E%E4%B9%8B%E7%9B%B8%E5%85%B3%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/index.html">
+<meta property="og:site_name" content="pd">
+<meta property="og:description" content="写在前面如果不知道怎么看UML类图的请不用往下看了，其对于理解非常重要，请先会读后再继续看 系统构成 与 系统结构系统构成系统的构成结构、主要元素有层（layer）与 区（partition），层是按照抽象层次进行的水平划分、是经过抽象提取出来的，高层建立与低层之上（单向依赖）；而区是同一层中的垂直划分（同层的区是双向合作关系）；进入区里面再到包（package层次），最后具体到类（class）">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://yoursite.com/images/bridge_pattern.png">
+<meta property="og:image" content="http://yoursite.com/images/adaptor_genera.png">
+<meta property="og:image" content="http://yoursite.com/images/adaptor_comp.png">
+<meta property="og:image" content="http://yoursite.com/images/decorator_widget.jpg">
+<meta property="og:image" content="http://yoursite.com/images/facade%20pattern.jpg">
+<meta property="og:image" content="http://yoursite.com/images/composite_trans.jpg">
+<meta property="og:image" content="http://yoursite.com/images/composite_safe.png">
+<meta property="article:published_time" content="2020-08-23T15:50:01.000Z">
+<meta property="article:modified_time" content="2020-08-23T15:51:46.577Z">
+<meta property="article:author" content="-_-">
+<meta property="article:tag" content="设计模式">
+<meta property="article:tag" content="编程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/bridge_pattern.png">
+
+<link rel="canonical" href="http://yoursite.com/2020/08/23/%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84%E8%AE%BE%E8%AE%A1&%E4%B8%8E%E4%B9%8B%E7%9B%B8%E5%85%B3%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>系统构成 与 结构型，以及结构型相关的7个设计模式 | pd</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">pd</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">一瞥之见</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/08/23/%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84%E8%AE%BE%E8%AE%A1&%E4%B8%8E%E4%B9%8B%E7%9B%B8%E5%85%B3%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="-_-">
+      <meta itemprop="description" content="15652616715">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="pd">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          系统构成 与 结构型，以及结构型相关的7个设计模式
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-08-23 23:50:01 / 修改时间：23:51:46" itemprop="dateCreated datePublished" datetime="2020-08-23T23:50:01+08:00">2020-08-23</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h3><p>如果不知道怎么看UML类图的请不用往下看了，其对于理解非常重要，请先会读后再继续看</p>
+<h3 id="系统构成-与-系统结构"><a href="#系统构成-与-系统结构" class="headerlink" title="系统构成 与 系统结构"></a>系统构成 与 系统结构</h3><h4 id="系统构成"><a href="#系统构成" class="headerlink" title="系统构成"></a>系统构成</h4><p>系统的构成结构、主要元素有层（layer）与 区（partition），层是按照抽象层次进行的水平划分、是经过抽象提取出来的，高层建立与低层之上（单向依赖）；而区是同一层中的垂直划分（同层的区是双向合作关系）；进入区里面再到包（package层次），最后具体到类（class）</p>
+<h4 id="结构型"><a href="#结构型" class="headerlink" title="结构型"></a>结构型</h4><p>系统结构类型相关的设计模式的一大关注点是其是否利用继承层级的类结构和聚合层级的对象结构在上面提到的类层级下构建了更高层的抽象 or 更大的复合结构（另一个关注点就是其对于GRASP和SOLID等设计原则的遵循）</p>
+<h3 id="结构型的设计模式"><a href="#结构型的设计模式" class="headerlink" title="结构型的设计模式"></a>结构型的设计模式</h3><h4 id="桥梁模式（bridge-design-pattern）"><a href="#桥梁模式（bridge-design-pattern）" class="headerlink" title="桥梁模式（bridge design pattern）"></a>桥梁模式（bridge design pattern）</h4><ul>
+<li>应用场景：若某个类存在两个独立的变化维度，桥梁模式将其<u>分解为两个独立的等级结构，并且通过一个“桥”关联起来，使其两个维度可以独立变化的同时又通过“桥”连接到一起（从而组合使用功能）</u></li>
+<li>应用举例：<ul>
+<li>跨平台播放器：<ul>
+<li>假设处理流程是<ul>
+<li>通过调用特定视频格式的信息提取代码来提取信息</li>
+<li>通过调用特定平台的播放组件并且接受提取出来的信息来播放 </li>
+</ul>
+</li>
+<li>如果是采用继承模式就需要写a * b个类（如window-AVI处理类，mac-AVI处理类…）,</li>
+<li>采用桥接模式后改成a + b个类（避免了子类爆炸），步骤上分别委托到各自中去执行，且各自的代码实现独立变化</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>图示<br><img src="/images/bridge_pattern.png" alt="img"></li>
+<li>代码示例<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">avi_parser &#x3D; AviParser()</span><br><span class="line">player &#x3D; WindowsPlayer(aviparser, &quot;xxx.avi&quot;)</span><br><span class="line">player.play()</span><br></pre></td></tr></table></figure></li>
+<li>优势<ul>
+<li>客户端可以针对两个维度的抽象层编程，在程序运行时再动态确定两个维度的子类，动态组合对象，将两个独立变化的维度完全解耦，以便能够灵活地扩充任一维度而对另一维度不造成任何影响</li>
+<li>基于组合来避免了在此种情景中基于继承的子类爆炸问题</li>
+</ul>
+</li>
+<li>同理、可以推导到多维</li>
+</ul>
+<h4 id="适配器模式（adapter-design-pattern）"><a href="#适配器模式（adapter-design-pattern）" class="headerlink" title="适配器模式（adapter design pattern）"></a>适配器模式（adapter design pattern）</h4><ul>
+<li>应用场景：接口转换器，用于<u>解决已有的服务提供者与服务使用者之前的接口不兼容</u>的问题</li>
+<li>两种实现方式：（*下面用到的单词解释：Target表示要转化成的接口定义，Adaptee是不兼容ITarget接口定义的接口，Adaptor将Adaptee转化为一组符合Target定义的接口）<ul>
+<li><strong>类适配器</strong>：基于继承关系实现（优势：若Target与Adaptee有部分一致的接口就可以不用再在Adapter中实现了）<br><img src="/images/adaptor_genera.png" alt="adaptor_genera"></li>
+<li><strong>对象适配器</strong>：基于组合关系实现（优势：组合结构本身比继承结构更灵活、更拥抱变化）<br><img src="/images/adaptor_comp.png" alt="adaptor_genera"></li>
+</ul>
+</li>
+<li>用户视角：调用适配器类进行访问</li>
+<li>在设计原则上、其表现了：<ul>
+<li>保变原则：将容易变化的地方（调用方式）独立出来与核心实现解藕</li>
+<li>开闭原则：对扩张开放、对修改封闭。这里就是通过适配器来扩展代码适用范围</li>
+<li>纯虚构原则：将一组高内聚的职责分配给一个虚构的或处理方便的“行为”类，它并不是问题域中的概念，而是虚构的事物，以达到支持（这里的Target、Adaptee之间的）高内聚、低耦合和复用。（这里的Adapter就是此虚构的行为类）</li>
+</ul>
+</li>
+</ul>
+<h4 id="装饰模式（decorator-design-pattern）"><a href="#装饰模式（decorator-design-pattern）" class="headerlink" title="装饰模式（decorator design pattern）"></a>装饰模式（decorator design pattern）</h4><ul>
+<li>应用场景：主要用于<u>灵活的对原始类进行可组合的功能增强</u>，也避免了如果要基于继承实现同样效果的子类膨胀问题</li>
+<li>举例说明：一个显示组件类Widget，其可开/闭的选项有 加边框、滚动条、可拖动、可缩放…<ul>
+<li>继承实现：如ScrollableWidget、ZoomableWidget…，最后甚至有BorderedScrollableDraggableWidget类 -&gt; 子类膨胀</li>
+<li>装饰者实现：见下面类图<ul>
+<li>若要实现上面的BorderedScrollableDraggableWidget 可通过new DragDecorator(new ScrollDecorator(new BorderDecorator(someWidget)))实现</li>
+<li>这里类图需要注意的是WidgetDecorator既继承了Widget、又由Widget聚合而成。<ul>
+<li>继承：为了保持装饰后的类型与未装饰是一致的，从而保持透明性避免引起别的使用地方可能出现的类型问题 &amp; 同时也保证了嵌套时的输入类型一直都是widget类型（否则不可嵌套）</li>
+<li>聚合：是从某种意义上、其只是widget的组装者，但是也可以看作是其包含了widget、从而是聚合关系<br><img src="/images/decorator_widget.jpg" alt="decorator_widget"></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>用户视角：可同时访问装饰类与实现类、并且自己组合选择装饰类来对实现类进行“装饰”</li>
+<li>注意点：<ul>
+<li>装饰者模式可嵌套、也就是可以动态的增加/减少，这也是继承办不到的</li>
+<li>装饰装饰、顾名思义是与“核心”无关的东西，如这里someWidget自己内部的核心逻辑是完全隔离的，装饰模式只应该提供辅助性/边缘性的职责。同时这也是符合<strong>关注点分离原则</strong>（对于想改变核心的情况、应该使用<strong>策略模式</strong>）</li>
+</ul>
+</li>
+<li>构造了更大的复合结构</li>
+</ul>
+<h4 id="代理模式-（proxy-design-pattern）"><a href="#代理模式-（proxy-design-pattern）" class="headerlink" title="代理模式 （proxy design pattern）"></a>代理模式 （proxy design pattern）</h4><ul>
+<li>应用场景：对原始类的<u>访问控制（组合 + 选择性委托），功能增强（继承 + 扩展）</u></li>
+<li>举例说明：如防火墙、C++的智能指针、写时拷贝</li>
+<li>用户视角：调用代理类进行创建，原始类不再能/推荐被使用</li>
+<li>对比下装饰器模式<ul>
+<li>代理模式非返回原始类型 &amp; 不可嵌套的</li>
+<li>用于替代原始类而不是装饰原始类</li>
+</ul>
+</li>
+</ul>
+<h4 id="门面-外观模式（facade-design-pattern）"><a href="#门面-外观模式（facade-design-pattern）" class="headerlink" title="门面/外观模式（facade design pattern）"></a>门面/外观模式（facade design pattern）</h4><ul>
+<li>应用场景：一般用于写类库时，考虑使用者在基于此类库实现某功能时，是需要能相对层级浅、数量少的引入，or 需要数量多、层级深的引入</li>
+<li>图示说明：<img src="/images/facade pattern.jpg" alt="facade pattern" style="zoom:72%;" /></li>
+<li>使用优势<ul>
+<li>用户使用的心智负担小</li>
+<li>子系统各个服务类若发生变化不同意影响到用户（假设最原始的就是直接引入此类了，而后期又对此类进行了改名等变化）</li>
+</ul>
+</li>
+<li>对比适配器模式，外观模式构造了一个抽象层次更高的类，其子系统是实现细节，而外界使用者不再关心实现细节、而是直接通过Facade类即可完成使用。而适配器模式是平层次的</li>
+</ul>
+<h4 id="组合-复合模式（composite-design-pattern）"><a href="#组合-复合模式（composite-design-pattern）" class="headerlink" title="组合/复合模式（composite design pattern）"></a>组合/复合模式（composite design pattern）</h4><ul>
+<li>应用场景：特别指定应用于能够表示为树形结构、且叶子结点可以是不同类型但是一定有相同的抽象操作方法/属性的情景（树形结构提供了一种遍历所有节点的方式以及层级关系）。在这种场景下<u>使用组合模式来构建操作一致性</u>（从复合对象作为入口后可不用关心具体对象，直接调用复合对象提供的方式/属性即可达到全部操作的目的）</li>
+<li>举例：文件系统里面的文件与目录（复合类型是文件系统，具体类型是文件/目录），公司结构中的员工与部门（复合类型是公司，具体类型是员工/部门）</li>
+<li>两种类型：<ul>
+<li>透明型: 复合类型暴露的方法是具体类型方法的合集<br><img src="/images/composite_trans.jpg" alt="composite_trans"></li>
+<li>安全型：复合类型暴露的方法是具体类型方法的交集<img src="/images/composite_safe.png" alt="facade pattern" style="zoom:50%;" /></li>
+</ul>
+</li>
+<li>一个具体的例子：假设一个页面有各种各样的前端组件（此时复合类型是front_page），而此复合类型下面可以有各种具体的组件类型（假设有Container、Button、Text、……）<ul>
+<li>假设对于一个已经渲染好的页面，用户突然要缩小显示为90%，则首先：基于树形结构，以复合类为入口能够简单滴遍历到各个叶子的具体类，然后复合类又规范了一个假设名字叫zoom的方法，则我们是知道叶子类都有此方法，故遍历到的时候就不需要考虑类型直接调用即可（当然，如上面安全型表示的，有非交集的方法，这种调用就只利用了方便的遍历，具体能不能调用还要再做判断）</li>
+<li>再看看上面的例子，集合类是个实现类，叶子节点都是继承/泛化它，所以继承带来的好处我们都能够方便的用上（比如渲染前一开始就在复合类上设置了能有border的组件都要默认显示border的标示，则后面的叶子节点就不用设置直接能访问到了）</li>
+</ul>
+</li>
+<li>构造了更大的复合结构</li>
+</ul>
+<h4 id="享元模式（flyweight-design-pattern）"><a href="#享元模式（flyweight-design-pattern）" class="headerlink" title="享元模式（flyweight design pattern）"></a>享元模式（flyweight design pattern）</h4><ul>
+<li><strong>23个设计模式中唯一一个针对性能而不是设计的模式</strong></li>
+<li>应用场景：针对一类粒度小、数量多、相识度高、种类有限、具有值语义的对象，<u>通过共享其内在相同部分来复用对象、节省内存，节约创建</u>，共同部分之外的上下文才是每个对象自己独有的、需要维护的</li>
+<li>备注 - 值语义：目标对象由源对象拷贝生成，且生成后与源对象完全无关，彼此独立存在，改变互不影响</li>
+<li>实现的注意点：<ul>
+<li>核心是抽象出一类对象内在的、不因环境而异的状态，封装后作为共享单元（flyweight）</li>
+<li>由于要共享，所以不能每次由客户自己亲自创建对象，一般是通过工厂模式进行创建</li>
+</ul>
+</li>
+<li>举例：一个象棋游戏厅，房间上千万，但是象棋的类型（相、车、马…）、颜色是一一对应且很少的，如果每个房间都初始化自己的多有棋子对象，就会有太多重复。从而可以将类型和颜色作为享元，位置作为外部上下文从而节约大量的内存</li>
+</ul>
+<h3 id="上面的几种设计模式小节"><a href="#上面的几种设计模式小节" class="headerlink" title="上面的几种设计模式小节"></a>上面的几种设计模式小节</h3><ul>
+<li>桥梁模式：将一个类多个维度的变化拆解为单独的类并且通过组合作为桥来使用，分离变化</li>
+<li>适配器模式：解决已有服务提供者与服务使用者之前的接口不兼容的问题</li>
+<li>装饰模式：灵活的对原始类进行可组合/撤销的功能增强</li>
+<li>代理模式：对原始类的 访问控制（组合 + 选择性委托），功能增强（继承 + 扩展）</li>
+<li>门面模式：提供了粗粒度、抽象层次更高的接口，以简化/统一外部对子系统的访问/使用，也隔离了变化</li>
+<li>复合模式：抽象理解和统一管理不同的类型</li>
+<li>享元模式：减少对象创建 + 节约内存</li>
+</ul>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><blockquote>
+<p>《冒号课堂》第13章第2节、其中有几张不清晰的图直接来自此书<br>两个讲桥接模式的文章：<a href="https://wiki.jikexueyuan.com/project/design-pattern-structurized/bridge-two.html" target="_blank" rel="noopener">1</a>、<a href="https://www.barretlee.com/blog/2017/01/16/the-bridge-pattern-in-design-patterns/" target="_blank" rel="noopener">2</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag"># 设计模式</a>
+              <a href="/tags/%E7%BC%96%E7%A8%8B/" rel="tag"># 编程</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/08/18/%E5%88%9B%E5%BB%BA%E7%B1%BB%E5%AE%9E%E4%BE%8B/" rel="prev" title="创建类实例">
+      <i class="fa fa-chevron-left"></i> 创建类实例
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#写在前面"><span class="nav-number">1.</span> <span class="nav-text">写在前面</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#系统构成-与-系统结构"><span class="nav-number">2.</span> <span class="nav-text">系统构成 与 系统结构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#系统构成"><span class="nav-number">2.1.</span> <span class="nav-text">系统构成</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#结构型"><span class="nav-number">2.2.</span> <span class="nav-text">结构型</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#结构型的设计模式"><span class="nav-number">3.</span> <span class="nav-text">结构型的设计模式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#桥梁模式（bridge-design-pattern）"><span class="nav-number">3.1.</span> <span class="nav-text">桥梁模式（bridge design pattern）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#适配器模式（adapter-design-pattern）"><span class="nav-number">3.2.</span> <span class="nav-text">适配器模式（adapter design pattern）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#装饰模式（decorator-design-pattern）"><span class="nav-number">3.3.</span> <span class="nav-text">装饰模式（decorator design pattern）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#代理模式-（proxy-design-pattern）"><span class="nav-number">3.4.</span> <span class="nav-text">代理模式 （proxy design pattern）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#门面-外观模式（facade-design-pattern）"><span class="nav-number">3.5.</span> <span class="nav-text">门面&#x2F;外观模式（facade design pattern）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#组合-复合模式（composite-design-pattern）"><span class="nav-number">3.6.</span> <span class="nav-text">组合&#x2F;复合模式（composite design pattern）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#享元模式（flyweight-design-pattern）"><span class="nav-number">3.7.</span> <span class="nav-text">享元模式（flyweight design pattern）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#上面的几种设计模式小节"><span class="nav-number">4.</span> <span class="nav-text">上面的几种设计模式小节</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-number">5.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">-_-</p>
+  <div class="site-description" itemprop="description">15652616715</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">-_-</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'edf9b4cf38817a8e9705',
+      clientSecret: 'a9e7395b37100257f052db822d40873b9fca18a5',
+      repo: 'pillipanda.github.io',
+      owner: 'pillipanda',
+      admin: ['pillipanda'],
+      id: '4e340f9390c6e5ba83d4226c70f57d24',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>
