@@ -170,6 +170,212 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/08/30/%E8%A1%8C%E4%B8%BA%E7%9B%B8%E5%85%B3%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="-_-">
+      <meta itemprop="description" content="15652616715">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="pd">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/08/30/%E8%A1%8C%E4%B8%BA%E7%9B%B8%E5%85%B3%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">行为类相关的设计模式</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-08-30 20:41:36 / 修改时间：21:00:09" itemprop="dateCreated datePublished" datetime="2020-08-30T20:41:36+08:00">2020-08-30</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
+                    <span itemprop="name">编程</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <blockquote>
+<p><strong>前言</strong></p>
+<p>请先确保能读懂UML类图。UML类图基础 <a href="https://pillipanda.github.io/2020/08/29/%E8%AF%BB%E6%87%82UML%E5%9B%BE/" target="_blank" rel="noopener">可参考</a></p>
+</blockquote>
+<h3 id="行为"><a href="#行为" class="headerlink" title="行为"></a>行为</h3><p>即动态、关注点在于对象之间动态（通信、交互）的部分</p>
+<h3 id="涉及到的设计模式"><a href="#涉及到的设计模式" class="headerlink" title="涉及到的设计模式"></a>涉及到的设计模式</h3><h4 id="职责链模式-chain-of-responsibility-pattern"><a href="#职责链模式-chain-of-responsibility-pattern" class="headerlink" title="职责链模式 - chain of responsibility pattern"></a>职责链模式 - chain of responsibility pattern</h4><ul>
+<li>应用场景：<u>常用于事件模型</u>，这种情况下不变的是事件的发生，变化的是事件发生后在不同时空间的不同处理流程（分离变化）</li>
+<li>举例：<ul>
+<li>web框架的middleware</li>
+</ul>
+</li>
+<li>优势：<ul>
+<li>处理链可以动态变动</li>
+<li>容易对外提供扩展点加入到处理链</li>
+</ul>
+</li>
+<li>UML图（来源《冒号课堂》）<img src="/images/chain_of_responsibility.jpg" alt="chain_of_responsibility" style="zoom:80%;" /></li>
+<li>备注：虽然上图中的<em>Handler</em>是抽象类（斜体的），但是实际用Interface也是完全可以的、具体使用什么就看你的应用中的具体需求了</li>
+<li>体现的设计原则：<ul>
+<li>单一职责原则：否则一次处理的代码集合了各种职责</li>
+<li>最少知识原则：每个处理点只关心自己</li>
+</ul>
+</li>
+<li>对比装饰者模式：职责模式关注行为上的职责分解、装饰者模式关注结构上的职责结合（但是职责模式也可实现装饰者模式的效果、即每个点正好就是对某对象进行装饰）</li>
+</ul>
+<h4 id="命令模式-command-pattern"><a href="#命令模式-command-pattern" class="headerlink" title="命令模式 - command pattern"></a>命令模式 - command pattern</h4><ul>
+<li>应用场景：在出于特定目的，需要控制命令的执行者/执行时机的场景（e.g: 游戏用户的此局游戏数据的记录、等到用户全部完成后再触发各项纪录“入库”）</li>
+<li>实现核心：封装需要执行的命令及其上下文成为一个“命令对象”，而后在特定的时机由触发者触发此命令(回调)的执行。从而实现了命令的接收与执行在时间和空间上的解耦</li>
+<li>UML图（来源《冒号课堂》）: <ul>
+<li>在Receiver与Invoker之间加入了间接的Command对象、如Invoker可以不断的取出特定数量的Command对象并调用其execute()方法即可（不需要关心其是什么、需要什么，因为这些它都自己封装好了）</li>
+<li>这里还需要注意的一点是对Receiver这个对象的理解，表示的是“执行对象”。client接收到命令后找到实际的执行者(receiver)、和执行上下文一起封装为一个command对象（如执行者是个函数、执行上下文是其参数）<br><img src="/images/command_pattern.jpg" alt="command_pattern"></li>
+</ul>
+</li>
+<li>体现的设计原则<ul>
+<li>间接原则&amp;保变原则：通过Command这个间接对象、保护了command的执行者、执行时间的变化性。从而可以是不同的client构造了不同的receiver以及context、但是执行的接口是统一的、invoker之间调用执行即可</li>
+</ul>
+</li>
+</ul>
+<h4 id="观察者-发布订阅模式-observer-pattern"><a href="#观察者-发布订阅模式-observer-pattern" class="headerlink" title="观察者/发布订阅模式 - observer pattern"></a>观察者/发布订阅模式 - observer pattern</h4><ul>
+<li>应用场景：应对一对多的情况、当一个对象接收到消息/状态发生改变后、多个平等的依赖者对象都需要收到消息。也是常用于事件驱动的编程。</li>
+<li>举例：用户登录后、发欢迎邮件、初始化账户默认信息等等依赖对象都收到消息然后自己进行对应处理</li>
+<li>UML图（来源《冒号课堂》）: <img src="/images/observer_pattern.jpg" alt="observer_pattern" style="zoom:50%;" /></li>
+<li>优势：解耦原本是同级别的依赖对象（observer）。对比下如果只有一个消息接收入口、那么此入口需要完成多个对象的状态更新调用，而通过消息的多方传播，每个对象都只需要对自己负责即可</li>
+<li>体现的设计原则<ul>
+<li>好莱坞原则：don‘t call us, we‘ll call you</li>
+<li>控制反转：此时subject是底层、而observer是高层。如MVC模型中的底层（模型 - model）与高层（视图 - view）之间</li>
+</ul>
+</li>
+</ul>
+<h4 id="中介模式-mediator-pattern"><a href="#中介模式-mediator-pattern" class="headerlink" title="中介模式 - mediator pattern"></a>中介模式 - mediator pattern</h4><ul>
+<li>设计核心：利用纯虚构原则造出一个信息交换中心，改变一群对象之间的信息交流为必须要知道具体目的对象为只需要知道信息交换中心即可<img src="/images/mediator_explain.jpeg" alt="mediator_explain" style="zoom:30%;" /></li>
+<li>应用举例：其实DNS系统就是这样的、其作为域名到ip的映射、如果没有中心服务器，总不能每台个人电脑都保存一个完备的映射表吧，那样对于存储以及更新的问题都太麻烦了</li>
+<li>UML类图（来源《冒号课堂》）: <img src="/images/mediator_pattern.jpg" alt="mediator_pattern" style="zoom:50%;" /></li>
+<li>对比观察者模式：<ul>
+<li>相比观察者模式的具体对象是功能单一的观察者(单向)、中介模式的对象可能即是观察者又是发布者（双向），且相互之间的观察/发布关系复杂</li>
+<li>中介者会形成一个上帝视角的地方、从而可以做到如编排顺序等等操作、观察者模式是做不到的</li>
+</ul>
+</li>
+<li>体现的设计原则<ul>
+<li>局部化原则 &amp; 关注点分离原则：将多有的通信关系/逻辑集中起来</li>
+<li>迪米特法则/最少知识原则：发布者不需要知道具体的接收者、只是发布到中介即可。（特别想象下、在分布式情况下、若某发布者的接收者发生了变化、使用中介模式的话更新起来会特别的稳定/方便！）</li>
+</ul>
+</li>
+</ul>
+<h4 id="状态模式-state-pattern"><a href="#状态模式-state-pattern" class="headerlink" title="状态模式 - state pattern"></a>状态模式 - state pattern</h4><ul>
+<li>设计核心：一个对象可能有多种状态，且在不同的状态下的行为是不同的。而引起状态的变化需要事件（event）的发生、与此同时可能会伴随着别的一些操作（action）[额外操作不是一定有的、也有可能事件发生只改变状态]</li>
+<li>应用举例：同样的一个执行操作，对于不同身份的user表现不同，如果是superuser就直接执行、如果是普通用户就提示会进入审批、如果是未登录用户直接拒绝</li>
+<li>UML类图（来源《冒号课堂》）: <img src="/images/state_pattern.jpg" alt="state_pattern" style="zoom:50%;" /></li>
+<li>由上图可见、核心实现是：<ul>
+<li>单独维护状态类</li>
+<li>不同状态的行为通过委托到具体的状态类来执行</li>
+</ul>
+</li>
+<li>体现的设计原则<ul>
+<li>保变原则：将与state相关的打包独立出为单独的对象</li>
+</ul>
+</li>
+</ul>
+<h4 id="备忘录模式-memento-pattern"><a href="#备忘录模式-memento-pattern" class="headerlink" title="备忘录模式 - memento pattern"></a>备忘录模式 - memento pattern</h4><ul>
+<li>应用：用于常需要恢复之前某个状态的程序</li>
+<li>UML类图（来源《冒号课堂》）: <img src="/images/memento_pattern.jpg" alt="memento_pattern" style="zoom:60%;" />
+
+
+</li>
+</ul>
+<h4 id="访问者模式-visitor-pattern"><a href="#访问者模式-visitor-pattern" class="headerlink" title="访问者模式 - visitor pattern"></a>访问者模式 - visitor pattern</h4><ul>
+<li>预知识<ul>
+<li>关于确定一个方法调用具体位置的情况<ul>
+<li>如果方法名是唯一的，没有异议，直接能确定</li>
+<li>如果方法名不唯一，通常由“参数类型” + “参数个数”来确认<ul>
+<li>若分派在编译期决定、称“静态分派”</li>
+<li>若分派在运行期决定、称“动态分派”（子类型多态的实现原理）</li>
+<li>备注：python和go都是原生不支持函数重载</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>单分派<ul>
+<li>在运行期，根据方法的接收者（即所属对象）来决定调用的情况【单指的就是只参考了所属对象这一个参数】</li>
+<li>大多数常见语言都是此机制（Python、C++、Java…)</li>
+</ul>
+</li>
+<li>双分派<ul>
+<li>根据 方法的接收者（即所属对象） + 参数的数量以及类型 共同决定调用</li>
+<li>少数语言支持（Clojure、Groovy、Dylan）</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>TODO、由于python和go都不支持函数重载，用的少、暂时掠过</li>
+</ul>
+<h4 id="迭代器模式-iterator-pattern"><a href="#迭代器模式-iterator-pattern" class="headerlink" title="迭代器模式 - iterator pattern"></a>迭代器模式 - iterator pattern</h4><ul>
+<li><p>将遍历单独提出来成为一个Interface，从而分离了对象与对象的遍历，带来的<strong>优势</strong>是</p>
+<ul>
+<li>可以方便的切换具体迭代的方式/算法而不修改对象本身</li>
+<li>针对特定的数据结构、语言可预先写好一些高性能/基础的遍历方式供用户使用</li>
+<li>基于此Interface、方便用户开发自己的遍历算法并使用</li>
+</ul>
+</li>
+<li><p>核心：赋予了用户灵活选择/自定义对容器的遍历方式</p>
+</li>
+<li><p>UML类图（来源《冒号课堂》）</p>
+<img src="/images/iterator_pattern.jpg" alt="iterator_pattern" style="zoom:60%;" /></li>
+<li><p>调用举例：<br>aggregate = ConcreteAggregate()<br>// … 填充元素<br>iterator = aggregate.createIterator(ConcrteIterator)   // 若要不同的遍历方式/限制只需换对应的ConcrteIterator即可<br>while iterator.next() {<br>​    //….</p>
+<p>}</p>
+</li>
+</ul>
+<h4 id="解释器模式-interpreter-pattern"><a href="#解释器模式-interpreter-pattern" class="headerlink" title="解释器模式 - interpreter pattern"></a>解释器模式 - interpreter pattern</h4><ul>
+<li>应用：为某个语言定义其语法表示，并且写出一个解释器用于处理此语法</li>
+<li>UML类图（来源《冒号课堂》）<img src="/images/interpreter_pattern.jpg" alt="interpreter_pattern" style="zoom:70%;" />
+
+
+</li>
+</ul>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><blockquote>
+<p>《冒号课堂》第13章第3节</p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/08/29/%E8%AF%BB%E6%87%82UML%E5%9B%BE/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -193,10 +399,16 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2020-08-29 18:41:36 / 修改时间：17:34:07" itemprop="dateCreated datePublished" datetime="2020-08-29T18:41:36+08:00">2020-08-29</time>
+              <time title="创建时间：2020-08-29 18:41:36" itemprop="dateCreated datePublished" datetime="2020-08-29T18:41:36+08:00">2020-08-29</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-08-30 10:33:56" itemprop="dateModified" datetime="2020-08-30T10:33:56+08:00">2020-08-30</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-folder-o"></i>
@@ -223,8 +435,8 @@
           <blockquote>
 <p>由于我写的设计模式总结相关博客的开头都冗写了请读者能先看懂UML类图、故而这里顺便总结下方便参阅</p>
 </blockquote>
-<h3 id="表示类"><a href="#表示类" class="headerlink" title="表示类"></a>表示类</h3><p>这个比较明确简单，#TODO补全</p>
-<h3 id="表示类之间关系"><a href="#表示类之间关系" class="headerlink" title="表示类之间关系"></a>表示类之间关系</h3><p><img src="/images/uml_links.png" alt="uml_links"></p>
+<h3 id="表示类"><a href="#表示类" class="headerlink" title="表示类"></a>表示类</h3><p>这个本身概念比较清晰（不容易又理解分歧点）、不少文章已经写的很清楚了，<a href="https://zhuanlan.zhihu.com/p/109655171" target="_blank" rel="noopener">如见</a></p>
+<h3 id="表示关系"><a href="#表示关系" class="headerlink" title="表示关系"></a>表示关系</h3><p><img src="/images/uml_links.png" alt="uml_links"></p>
 
       
     </div>
@@ -267,10 +479,16 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2020-08-23 23:50:01 / 修改时间：23:51:46" itemprop="dateCreated datePublished" datetime="2020-08-23T23:50:01+08:00">2020-08-23</time>
+              <time title="创建时间：2020-08-23 23:50:01" itemprop="dateCreated datePublished" datetime="2020-08-23T23:50:01+08:00">2020-08-23</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-08-30 20:54:03" itemprop="dateModified" datetime="2020-08-30T20:54:03+08:00">2020-08-30</time>
+              </span>
 
           
 
@@ -283,7 +501,10 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h3 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h3><p>如果不知道怎么看UML类图的请不用往下看了，其对于理解非常重要，请先会读后再继续看</p>
+          <blockquote>
+<p><strong>前言</strong></p>
+<p>请先确保能读懂UML类图。UML类图基础 <a href="https://pillipanda.github.io/2020/08/29/%E8%AF%BB%E6%87%82UML%E5%9B%BE/" target="_blank" rel="noopener">可参考</a></p>
+</blockquote>
 <h3 id="系统构成-与-系统结构"><a href="#系统构成-与-系统结构" class="headerlink" title="系统构成 与 系统结构"></a>系统构成 与 系统结构</h3><h4 id="系统构成"><a href="#系统构成" class="headerlink" title="系统构成"></a>系统构成</h4><p>系统的构成结构、主要元素有层（layer）与 区（partition），层是按照抽象层次进行的水平划分、是经过抽象提取出来的，高层建立与低层之上（单向依赖）；而区是同一层中的垂直划分（同层的区是双向合作关系）；进入区里面再到包（package层次），最后具体到类（class）</p>
 <h4 id="结构型"><a href="#结构型" class="headerlink" title="结构型"></a>结构型</h4><p>系统结构类型相关的设计模式的一大关注点是其是否利用继承层级的类结构和聚合层级的对象结构在上面提到的类层级下构建了更高层的抽象 or 更大的复合结构（另一个关注点就是其对于GRASP和SOLID等设计原则的遵循）</p>
 <h3 id="结构型的设计模式"><a href="#结构型的设计模式" class="headerlink" title="结构型的设计模式"></a>结构型的设计模式</h3><h4 id="桥梁模式（bridge-design-pattern）"><a href="#桥梁模式（bridge-design-pattern）" class="headerlink" title="桥梁模式（bridge design pattern）"></a>桥梁模式（bridge design pattern）</h4><ul>
@@ -456,7 +677,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-08-22 00:59:49" itemprop="dateModified" datetime="2020-08-22T00:59:49+08:00">2020-08-22</time>
+                <time title="修改时间：2020-08-30 20:53:18" itemprop="dateModified" datetime="2020-08-30T20:53:18+08:00">2020-08-30</time>
               </span>
 
           
@@ -470,7 +691,11 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h3 id="结构说明"><a href="#结构说明" class="headerlink" title="结构说明"></a>结构说明</h3><p>下面将从简单到复杂的说明，实例化类有哪些方式、会说明每种方式的优势和弊端是什么。不少方式会提供UML图说明，如果不清楚的一定需要先搞清楚UML图中各个连线代表的含义再往下看</p>
+          <blockquote>
+<p><strong>前言</strong></p>
+<p>请先确保能读懂UML类图。UML类图基础 <a href="https://pillipanda.github.io/2020/08/29/%E8%AF%BB%E6%87%82UML%E5%9B%BE/" target="_blank" rel="noopener">可参考</a></p>
+</blockquote>
+<h3 id="结构说明"><a href="#结构说明" class="headerlink" title="结构说明"></a>结构说明</h3><p>下面将从简单到复杂的说明，实例化类有哪些方式、会说明每种方式的优势和弊端是什么</p>
 <h3 id="创建类实例的演进过程"><a href="#创建类实例的演进过程" class="headerlink" title="创建类实例的演进过程"></a>创建类实例的演进过程</h3><h4 id="构造器-如new和-init"><a href="#构造器-如new和-init" class="headerlink" title="构造器 [如new和__init__() ]"></a>构造器 [如new和__init__() ]</h4><p>   存在的问题：可能一个类能够使用多种初始化的方式<br>   如可以使用两种方法描述一个点的位置：笛卡尔坐标系 与 极坐标系<br>       Point(double x, double y)<br>       Point(double r, double theta)</p>
 <h4 id="静态方法"><a href="#静态方法" class="headerlink" title="静态方法"></a>静态方法</h4><ul>
 <li>优点<ul>
@@ -730,6 +955,96 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/21/%E8%B0%88%E8%B0%88%E8%B0%83%E7%94%A8%E8%BF%94%E5%9B%9E/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="-_-">
+      <meta itemprop="description" content="15652616715">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="pd">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/06/21/%E8%B0%88%E8%B0%88%E8%B0%83%E7%94%A8%E8%BF%94%E5%9B%9E/" class="post-title-link" itemprop="url">谈谈调用链中的异常处理问题</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-06-21 22:41:36" itemprop="dateCreated datePublished" datetime="2020-06-21T22:41:36+08:00">2020-06-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-08-29 17:27:03" itemprop="dateModified" datetime="2020-08-29T17:27:03+08:00">2020-08-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
+                    <span itemprop="name">编程</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <blockquote>
+<p>由于调用很多情况下都存在子调用、而子调用链上很可能某一环就抛出了异常，此文主要讲我是怎么看待和处理这种情况的</p>
+</blockquote>
+<h3 id="不好的做法"><a href="#不好的做法" class="headerlink" title="不好的做法"></a>不好的做法</h3><h4 id="什么都不做"><a href="#什么都不做" class="headerlink" title="什么都不做"></a>什么都不做</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">def c():</span><br><span class="line">    raise Exception(&#39;xxx&#39;)</span><br><span class="line"></span><br><span class="line">def b():</span><br><span class="line">    # dong pre things</span><br><span class="line">    c()</span><br><span class="line">    # dong after things</span><br><span class="line"></span><br><span class="line">def a():</span><br><span class="line">    b()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:</span><br><span class="line">    a()</span><br><span class="line"></span><br><span class="line">&quot;&quot;&quot;</span><br><span class="line">输出：</span><br><span class="line">Traceback (most recent call last):</span><br><span class="line">  File &quot;&#x2F;...&#x2F;tmp.py&quot;, line 14, in &lt;module&gt;</span><br><span class="line">    a()</span><br><span class="line">  File &quot;&#x2F;...&#x2F;tmp.py&quot;, line 10, in a</span><br><span class="line">    b()</span><br><span class="line">  File &quot;&#x2F;...&#x2F;tmp.py&quot;, line 6, in b</span><br><span class="line">    c()</span><br><span class="line">  File &quot;&#x2F;...&#x2F;tmp.py&quot;, line 2, in c</span><br><span class="line">    raise Exception(&#39;xxx&#39;)</span><br><span class="line">Exception: xxx</span><br><span class="line">&quot;&quot;&quot;</span><br></pre></td></tr></table></figure>
+<pre><code>1. 这样导致程序直接退出了、而得到的报错信息是程序报错的信息，这样是不能够提供给用户（非开发人员）的
+2. 有可能在b环节里、调用c压根不是个重要的事情（假设是打日志到某日志收集平台）、那么由于c发生的异常导致整体让用户认为操作失败了是完全没有必要的
+3. c真的应该raise Exception吗？这会导致所有其调用者都需要使用try ... catch ...来捕捉错误信息</code></pre><h4 id="所有子调用都统一返回result、error格式"><a href="#所有子调用都统一返回result、error格式" class="headerlink" title="所有子调用都统一返回result、error格式"></a>所有子调用都统一返回result、error格式</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">def c():</span><br><span class="line">    return None, Exception(&#39;xxx&#39;)</span><br><span class="line"></span><br><span class="line">def b():</span><br><span class="line">    # dong pre things</span><br><span class="line">    c_res, err &#x3D; c()</span><br><span class="line">    # 若我（b）认为是关键步骤、就直接返回 None，&#39;从b的角度转化为可读性更高的报错信息&#39;</span><br><span class="line">    # 否则继续往下走</span><br><span class="line">    # dong after things</span><br><span class="line"></span><br><span class="line">    return &#39;sth&#39;, None</span><br><span class="line"></span><br><span class="line">def a():</span><br><span class="line">    b_resp, err &#x3D; b()</span><br><span class="line"></span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:</span><br><span class="line">    a()</span><br></pre></td></tr></table></figure>
+<pre><code>1. 优点：b能够处理上面提到的没必要因为不重要事情而退出的情况
+2. 优点：a拿到b的可读性更好的报错信息，其可以根据自己对于b业务的重要性等判断来决定是否处理以及返回的错误信息（从a的角度理解是a最接近用户、最接近具体业务、其能返回可读性更高的信息、以及更能决定哪些步骤才是核心步骤; 从b的角度理解就是b只提供特定功能，此功能在调用b的不同调用者中的重要程度不同，对于b处理结果的看待方式应由调用者决定）
+2. 缺点：从a的角度拿到的信息少了底层（c）的真实程序报错信息，不方便开发者来后续分析与处理</code></pre><h3 id="我希望做到的是若某次的调用链其中某一-几环出现了异常"><a href="#我希望做到的是若某次的调用链其中某一-几环出现了异常" class="headerlink" title="我希望做到的是若某次的调用链其中某一/几环出现了异常"></a>我希望做到的是若某次的调用链其中某一/几环出现了异常</h3><ol>
+<li><strong>尽量</strong>不raise Exception从而避免自己其实是个不重要的功能却导致整体的调用失败</li>
+<li>最后能返回给用户可读性非常高的异常信息</li>
+<li>能够提供给开发者掌握到各个调用的异常详情信息以方便排查/修复</li>
+</ol>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">"""</span></span><br><span class="line"><span class="string">现在我的项目是将Ret实现到一个每个文件都应该导入的一个包里，并确保所有的返回都是Ret实例</span></span><br><span class="line"><span class="string">这里为了方便写到一起</span></span><br><span class="line"><span class="string">对比之前我习惯以result, error的返回方式，我觉得这种方式的优点会多不少（对于"核心思想"）</span></span><br><span class="line"><span class="string">"""</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Ret</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, result=None, error=[])</span>:</span></span><br><span class="line">        self.result = result</span><br><span class="line">        self._err = [] <span class="keyword">if</span> <span class="keyword">not</span> error <span class="keyword">else</span> [error]  <span class="comment"># always keep error as a list</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__setattr__</span><span class="params">(self, key, value)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> key == <span class="string">'error'</span>:</span><br><span class="line">            self._err.append(value)</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        <span class="keyword">return</span> super().__setattr__(key, value)</span><br><span class="line"></span><br><span class="line"><span class="meta">    @property</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">error</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> self.result <span class="keyword">or</span> <span class="keyword">not</span> self._err:</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line">        <span class="keyword">return</span> self._err.__str__()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_error</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        self._err.append(value)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__bool__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> len(self._err) == <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> self:</span><br><span class="line">            <span class="keyword">return</span> <span class="string">f'SUC with result: <span class="subst">&#123;self.result&#125;</span>'</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="string">f'FAIL with error: <span class="subst">&#123;self.error&#125;</span>'</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">c</span><span class="params">()</span>:</span></span><br><span class="line">    ret = Ret()</span><br><span class="line">    <span class="comment"># 模拟处理有问题</span></span><br><span class="line"></span><br><span class="line">    ret.error = <span class="string">'c failed'</span></span><br><span class="line">    <span class="keyword">return</span> ret</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">b</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="comment"># ...</span></span><br><span class="line"></span><br><span class="line">    ret = c()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ret.error:</span><br><span class="line">        <span class="comment"># 此处b更有决定权是否/如何处理c返回出错的情况</span></span><br><span class="line">        <span class="comment"># 如果error是有效且不能继续下面的操作时，return ret即可</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 这里假设b的处理也出错了</span></span><br><span class="line">    <span class="comment"># 只需要继续对ret.error进行赋值即可会自动加到error_list中，使用负担小，直接</span></span><br><span class="line">    ret.error = <span class="string">'b failed'</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> ret</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">a</span><span class="params">()</span>:</span></span><br><span class="line">    ret = b()</span><br><span class="line">    print(ret)</span><br><span class="line">    print(ret.error)</span><br><span class="line">    <span class="comment"># 此处最高层应该更贴近业务，更能够决定如何处理此error</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    a()</span><br><span class="line"></span><br><span class="line"><span class="string">"""</span></span><br><span class="line"><span class="string">输出：</span></span><br><span class="line"><span class="string">FAIL with error: ['c failed', 'b failed']</span></span><br><span class="line"><span class="string">['c failed', 'b failed']</span></span><br><span class="line"><span class="string">"""</span></span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/21/%E8%AF%BB%E4%B9%A6%E8%AE%B0%E5%BD%95%E4%B8%8E%E8%A7%84%E5%88%92/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -819,96 +1134,6 @@
 </ul>
 </li>
 </ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/21/%E8%B0%88%E8%B0%88%E8%B0%83%E7%94%A8%E8%BF%94%E5%9B%9E/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="-_-">
-      <meta itemprop="description" content="15652616715">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="pd">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/06/21/%E8%B0%88%E8%B0%88%E8%B0%83%E7%94%A8%E8%BF%94%E5%9B%9E/" class="post-title-link" itemprop="url">谈谈调用链中的异常处理问题</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-06-21 22:41:36" itemprop="dateCreated datePublished" datetime="2020-06-21T22:41:36+08:00">2020-06-21</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-08-29 17:27:03" itemprop="dateModified" datetime="2020-08-29T17:27:03+08:00">2020-08-29</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
-                    <span itemprop="name">编程</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <blockquote>
-<p>由于调用很多情况下都存在子调用、而子调用链上很可能某一环就抛出了异常，此文主要讲我是怎么看待和处理这种情况的</p>
-</blockquote>
-<h3 id="不好的做法"><a href="#不好的做法" class="headerlink" title="不好的做法"></a>不好的做法</h3><h4 id="什么都不做"><a href="#什么都不做" class="headerlink" title="什么都不做"></a>什么都不做</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">def c():</span><br><span class="line">    raise Exception(&#39;xxx&#39;)</span><br><span class="line"></span><br><span class="line">def b():</span><br><span class="line">    # dong pre things</span><br><span class="line">    c()</span><br><span class="line">    # dong after things</span><br><span class="line"></span><br><span class="line">def a():</span><br><span class="line">    b()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:</span><br><span class="line">    a()</span><br><span class="line"></span><br><span class="line">&quot;&quot;&quot;</span><br><span class="line">输出：</span><br><span class="line">Traceback (most recent call last):</span><br><span class="line">  File &quot;&#x2F;...&#x2F;tmp.py&quot;, line 14, in &lt;module&gt;</span><br><span class="line">    a()</span><br><span class="line">  File &quot;&#x2F;...&#x2F;tmp.py&quot;, line 10, in a</span><br><span class="line">    b()</span><br><span class="line">  File &quot;&#x2F;...&#x2F;tmp.py&quot;, line 6, in b</span><br><span class="line">    c()</span><br><span class="line">  File &quot;&#x2F;...&#x2F;tmp.py&quot;, line 2, in c</span><br><span class="line">    raise Exception(&#39;xxx&#39;)</span><br><span class="line">Exception: xxx</span><br><span class="line">&quot;&quot;&quot;</span><br></pre></td></tr></table></figure>
-<pre><code>1. 这样导致程序直接退出了、而得到的报错信息是程序报错的信息，这样是不能够提供给用户（非开发人员）的
-2. 有可能在b环节里、调用c压根不是个重要的事情（假设是打日志到某日志收集平台）、那么由于c发生的异常导致整体让用户认为操作失败了是完全没有必要的
-3. c真的应该raise Exception吗？这会导致所有其调用者都需要使用try ... catch ...来捕捉错误信息</code></pre><h4 id="所有子调用都统一返回result、error格式"><a href="#所有子调用都统一返回result、error格式" class="headerlink" title="所有子调用都统一返回result、error格式"></a>所有子调用都统一返回result、error格式</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">def c():</span><br><span class="line">    return None, Exception(&#39;xxx&#39;)</span><br><span class="line"></span><br><span class="line">def b():</span><br><span class="line">    # dong pre things</span><br><span class="line">    c_res, err &#x3D; c()</span><br><span class="line">    # 若我（b）认为是关键步骤、就直接返回 None，&#39;从b的角度转化为可读性更高的报错信息&#39;</span><br><span class="line">    # 否则继续往下走</span><br><span class="line">    # dong after things</span><br><span class="line"></span><br><span class="line">    return &#39;sth&#39;, None</span><br><span class="line"></span><br><span class="line">def a():</span><br><span class="line">    b_resp, err &#x3D; b()</span><br><span class="line"></span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:</span><br><span class="line">    a()</span><br></pre></td></tr></table></figure>
-<pre><code>1. 优点：b能够处理上面提到的没必要因为不重要事情而退出的情况
-2. 优点：a拿到b的可读性更好的报错信息，其可以根据自己对于b业务的重要性等判断来决定是否处理以及返回的错误信息（从a的角度理解是a最接近用户、最接近具体业务、其能返回可读性更高的信息、以及更能决定哪些步骤才是核心步骤; 从b的角度理解就是b只提供特定功能，此功能在调用b的不同调用者中的重要程度不同，对于b处理结果的看待方式应由调用者决定）
-2. 缺点：从a的角度拿到的信息少了底层（c）的真实程序报错信息，不方便开发者来后续分析与处理</code></pre><h3 id="我希望做到的是若某次的调用链其中某一-几环出现了异常"><a href="#我希望做到的是若某次的调用链其中某一-几环出现了异常" class="headerlink" title="我希望做到的是若某次的调用链其中某一/几环出现了异常"></a>我希望做到的是若某次的调用链其中某一/几环出现了异常</h3><ol>
-<li><strong>尽量</strong>不raise Exception从而避免自己其实是个不重要的功能却导致整体的调用失败</li>
-<li>最后能返回给用户可读性非常高的异常信息</li>
-<li>能够提供给开发者掌握到各个调用的异常详情信息以方便排查/修复</li>
-</ol>
-<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">"""</span></span><br><span class="line"><span class="string">现在我的项目是将Ret实现到一个每个文件都应该导入的一个包里，并确保所有的返回都是Ret实例</span></span><br><span class="line"><span class="string">这里为了方便写到一起</span></span><br><span class="line"><span class="string">对比之前我习惯以result, error的返回方式，我觉得这种方式的优点会多不少（对于"核心思想"）</span></span><br><span class="line"><span class="string">"""</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Ret</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, result=None, error=[])</span>:</span></span><br><span class="line">        self.result = result</span><br><span class="line">        self._err = [] <span class="keyword">if</span> <span class="keyword">not</span> error <span class="keyword">else</span> [error]  <span class="comment"># always keep error as a list</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__setattr__</span><span class="params">(self, key, value)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> key == <span class="string">'error'</span>:</span><br><span class="line">            self._err.append(value)</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        <span class="keyword">return</span> super().__setattr__(key, value)</span><br><span class="line"></span><br><span class="line"><span class="meta">    @property</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">error</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> self.result <span class="keyword">or</span> <span class="keyword">not</span> self._err:</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line">        <span class="keyword">return</span> self._err.__str__()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_error</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        self._err.append(value)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__bool__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> len(self._err) == <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> self:</span><br><span class="line">            <span class="keyword">return</span> <span class="string">f'SUC with result: <span class="subst">&#123;self.result&#125;</span>'</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="string">f'FAIL with error: <span class="subst">&#123;self.error&#125;</span>'</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">c</span><span class="params">()</span>:</span></span><br><span class="line">    ret = Ret()</span><br><span class="line">    <span class="comment"># 模拟处理有问题</span></span><br><span class="line"></span><br><span class="line">    ret.error = <span class="string">'c failed'</span></span><br><span class="line">    <span class="keyword">return</span> ret</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">b</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="comment"># ...</span></span><br><span class="line"></span><br><span class="line">    ret = c()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ret.error:</span><br><span class="line">        <span class="comment"># 此处b更有决定权是否/如何处理c返回出错的情况</span></span><br><span class="line">        <span class="comment"># 如果error是有效且不能继续下面的操作时，return ret即可</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 这里假设b的处理也出错了</span></span><br><span class="line">    <span class="comment"># 只需要继续对ret.error进行赋值即可会自动加到error_list中，使用负担小，直接</span></span><br><span class="line">    ret.error = <span class="string">'b failed'</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> ret</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">a</span><span class="params">()</span>:</span></span><br><span class="line">    ret = b()</span><br><span class="line">    print(ret)</span><br><span class="line">    print(ret.error)</span><br><span class="line">    <span class="comment"># 此处最高层应该更贴近业务，更能够决定如何处理此error</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    a()</span><br><span class="line"></span><br><span class="line"><span class="string">"""</span></span><br><span class="line"><span class="string">输出：</span></span><br><span class="line"><span class="string">FAIL with error: ['c failed', 'b failed']</span></span><br><span class="line"><span class="string">['c failed', 'b failed']</span></span><br><span class="line"><span class="string">"""</span></span><br></pre></td></tr></table></figure>
 
       
     </div>
@@ -1213,7 +1438,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-count">10</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

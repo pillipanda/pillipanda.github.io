@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="前言 请先确保能读懂UML类图。UML类图基础 可参考  行为即动态、关注点在于对象之间动态（通信、交互）的部分 涉及到的设计模式职责链模式 - chain of responsibility pattern 应用场景：常用于事件模型，这种情况下不变的是事件的发生，变化的是事件发生后在不同时空间的不同处理流程（分离变化） 举例： web框架的middleware   优势： 处理链可以动态变动">
+<meta property="og:type" content="article">
+<meta property="og:title" content="行为类相关的设计模式">
+<meta property="og:url" content="http://yoursite.com/2020/08/30/%E8%A1%8C%E4%B8%BA%E7%9B%B8%E5%85%B3%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/index.html">
+<meta property="og:site_name" content="pd">
+<meta property="og:description" content="前言 请先确保能读懂UML类图。UML类图基础 可参考  行为即动态、关注点在于对象之间动态（通信、交互）的部分 涉及到的设计模式职责链模式 - chain of responsibility pattern 应用场景：常用于事件模型，这种情况下不变的是事件的发生，变化的是事件发生后在不同时空间的不同处理流程（分离变化） 举例： web框架的middleware   优势： 处理链可以动态变动">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://yoursite.com/images/chain_of_responsibility.jpg">
+<meta property="og:image" content="http://yoursite.com/images/command_pattern.jpg">
+<meta property="og:image" content="http://yoursite.com/images/observer_pattern.jpg">
+<meta property="og:image" content="http://yoursite.com/images/mediator_explain.jpeg">
+<meta property="og:image" content="http://yoursite.com/images/mediator_pattern.jpg">
+<meta property="og:image" content="http://yoursite.com/images/state_pattern.jpg">
+<meta property="og:image" content="http://yoursite.com/images/memento_pattern.jpg">
+<meta property="og:image" content="http://yoursite.com/images/iterator_pattern.jpg">
+<meta property="og:image" content="http://yoursite.com/images/interpreter_pattern.jpg">
+<meta property="article:published_time" content="2020-08-30T12:41:36.000Z">
+<meta property="article:modified_time" content="2020-08-30T13:00:09.123Z">
+<meta property="article:author" content="-_-">
+<meta property="article:tag" content="设计模式">
+<meta property="article:tag" content="编程通用">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/chain_of_responsibility.jpg">
+
+<link rel="canonical" href="http://yoursite.com/2020/08/30/%E8%A1%8C%E4%B8%BA%E7%9B%B8%E5%85%B3%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>行为类相关的设计模式 | pd</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">pd</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">一瞥之见</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/08/30/%E8%A1%8C%E4%B8%BA%E7%9B%B8%E5%85%B3%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="-_-">
+      <meta itemprop="description" content="15652616715">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="pd">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          行为类相关的设计模式
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-08-30 20:41:36 / 修改时间：21:00:09" itemprop="dateCreated datePublished" datetime="2020-08-30T20:41:36+08:00">2020-08-30</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
+                    <span itemprop="name">编程</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p><strong>前言</strong></p>
+<p>请先确保能读懂UML类图。UML类图基础 <a href="https://pillipanda.github.io/2020/08/29/%E8%AF%BB%E6%87%82UML%E5%9B%BE/" target="_blank" rel="noopener">可参考</a></p>
+</blockquote>
+<h3 id="行为"><a href="#行为" class="headerlink" title="行为"></a>行为</h3><p>即动态、关注点在于对象之间动态（通信、交互）的部分</p>
+<h3 id="涉及到的设计模式"><a href="#涉及到的设计模式" class="headerlink" title="涉及到的设计模式"></a>涉及到的设计模式</h3><h4 id="职责链模式-chain-of-responsibility-pattern"><a href="#职责链模式-chain-of-responsibility-pattern" class="headerlink" title="职责链模式 - chain of responsibility pattern"></a>职责链模式 - chain of responsibility pattern</h4><ul>
+<li>应用场景：<u>常用于事件模型</u>，这种情况下不变的是事件的发生，变化的是事件发生后在不同时空间的不同处理流程（分离变化）</li>
+<li>举例：<ul>
+<li>web框架的middleware</li>
+</ul>
+</li>
+<li>优势：<ul>
+<li>处理链可以动态变动</li>
+<li>容易对外提供扩展点加入到处理链</li>
+</ul>
+</li>
+<li>UML图（来源《冒号课堂》）<img src="/images/chain_of_responsibility.jpg" alt="chain_of_responsibility" style="zoom:80%;" /></li>
+<li>备注：虽然上图中的<em>Handler</em>是抽象类（斜体的），但是实际用Interface也是完全可以的、具体使用什么就看你的应用中的具体需求了</li>
+<li>体现的设计原则：<ul>
+<li>单一职责原则：否则一次处理的代码集合了各种职责</li>
+<li>最少知识原则：每个处理点只关心自己</li>
+</ul>
+</li>
+<li>对比装饰者模式：职责模式关注行为上的职责分解、装饰者模式关注结构上的职责结合（但是职责模式也可实现装饰者模式的效果、即每个点正好就是对某对象进行装饰）</li>
+</ul>
+<h4 id="命令模式-command-pattern"><a href="#命令模式-command-pattern" class="headerlink" title="命令模式 - command pattern"></a>命令模式 - command pattern</h4><ul>
+<li>应用场景：在出于特定目的，需要控制命令的执行者/执行时机的场景（e.g: 游戏用户的此局游戏数据的记录、等到用户全部完成后再触发各项纪录“入库”）</li>
+<li>实现核心：封装需要执行的命令及其上下文成为一个“命令对象”，而后在特定的时机由触发者触发此命令(回调)的执行。从而实现了命令的接收与执行在时间和空间上的解耦</li>
+<li>UML图（来源《冒号课堂》）: <ul>
+<li>在Receiver与Invoker之间加入了间接的Command对象、如Invoker可以不断的取出特定数量的Command对象并调用其execute()方法即可（不需要关心其是什么、需要什么，因为这些它都自己封装好了）</li>
+<li>这里还需要注意的一点是对Receiver这个对象的理解，表示的是“执行对象”。client接收到命令后找到实际的执行者(receiver)、和执行上下文一起封装为一个command对象（如执行者是个函数、执行上下文是其参数）<br><img src="/images/command_pattern.jpg" alt="command_pattern"></li>
+</ul>
+</li>
+<li>体现的设计原则<ul>
+<li>间接原则&amp;保变原则：通过Command这个间接对象、保护了command的执行者、执行时间的变化性。从而可以是不同的client构造了不同的receiver以及context、但是执行的接口是统一的、invoker之间调用执行即可</li>
+</ul>
+</li>
+</ul>
+<h4 id="观察者-发布订阅模式-observer-pattern"><a href="#观察者-发布订阅模式-observer-pattern" class="headerlink" title="观察者/发布订阅模式 - observer pattern"></a>观察者/发布订阅模式 - observer pattern</h4><ul>
+<li>应用场景：应对一对多的情况、当一个对象接收到消息/状态发生改变后、多个平等的依赖者对象都需要收到消息。也是常用于事件驱动的编程。</li>
+<li>举例：用户登录后、发欢迎邮件、初始化账户默认信息等等依赖对象都收到消息然后自己进行对应处理</li>
+<li>UML图（来源《冒号课堂》）: <img src="/images/observer_pattern.jpg" alt="observer_pattern" style="zoom:50%;" /></li>
+<li>优势：解耦原本是同级别的依赖对象（observer）。对比下如果只有一个消息接收入口、那么此入口需要完成多个对象的状态更新调用，而通过消息的多方传播，每个对象都只需要对自己负责即可</li>
+<li>体现的设计原则<ul>
+<li>好莱坞原则：don‘t call us, we‘ll call you</li>
+<li>控制反转：此时subject是底层、而observer是高层。如MVC模型中的底层（模型 - model）与高层（视图 - view）之间</li>
+</ul>
+</li>
+</ul>
+<h4 id="中介模式-mediator-pattern"><a href="#中介模式-mediator-pattern" class="headerlink" title="中介模式 - mediator pattern"></a>中介模式 - mediator pattern</h4><ul>
+<li>设计核心：利用纯虚构原则造出一个信息交换中心，改变一群对象之间的信息交流为必须要知道具体目的对象为只需要知道信息交换中心即可<img src="/images/mediator_explain.jpeg" alt="mediator_explain" style="zoom:30%;" /></li>
+<li>应用举例：其实DNS系统就是这样的、其作为域名到ip的映射、如果没有中心服务器，总不能每台个人电脑都保存一个完备的映射表吧，那样对于存储以及更新的问题都太麻烦了</li>
+<li>UML类图（来源《冒号课堂》）: <img src="/images/mediator_pattern.jpg" alt="mediator_pattern" style="zoom:50%;" /></li>
+<li>对比观察者模式：<ul>
+<li>相比观察者模式的具体对象是功能单一的观察者(单向)、中介模式的对象可能即是观察者又是发布者（双向），且相互之间的观察/发布关系复杂</li>
+<li>中介者会形成一个上帝视角的地方、从而可以做到如编排顺序等等操作、观察者模式是做不到的</li>
+</ul>
+</li>
+<li>体现的设计原则<ul>
+<li>局部化原则 &amp; 关注点分离原则：将多有的通信关系/逻辑集中起来</li>
+<li>迪米特法则/最少知识原则：发布者不需要知道具体的接收者、只是发布到中介即可。（特别想象下、在分布式情况下、若某发布者的接收者发生了变化、使用中介模式的话更新起来会特别的稳定/方便！）</li>
+</ul>
+</li>
+</ul>
+<h4 id="状态模式-state-pattern"><a href="#状态模式-state-pattern" class="headerlink" title="状态模式 - state pattern"></a>状态模式 - state pattern</h4><ul>
+<li>设计核心：一个对象可能有多种状态，且在不同的状态下的行为是不同的。而引起状态的变化需要事件（event）的发生、与此同时可能会伴随着别的一些操作（action）[额外操作不是一定有的、也有可能事件发生只改变状态]</li>
+<li>应用举例：同样的一个执行操作，对于不同身份的user表现不同，如果是superuser就直接执行、如果是普通用户就提示会进入审批、如果是未登录用户直接拒绝</li>
+<li>UML类图（来源《冒号课堂》）: <img src="/images/state_pattern.jpg" alt="state_pattern" style="zoom:50%;" /></li>
+<li>由上图可见、核心实现是：<ul>
+<li>单独维护状态类</li>
+<li>不同状态的行为通过委托到具体的状态类来执行</li>
+</ul>
+</li>
+<li>体现的设计原则<ul>
+<li>保变原则：将与state相关的打包独立出为单独的对象</li>
+</ul>
+</li>
+</ul>
+<h4 id="备忘录模式-memento-pattern"><a href="#备忘录模式-memento-pattern" class="headerlink" title="备忘录模式 - memento pattern"></a>备忘录模式 - memento pattern</h4><ul>
+<li>应用：用于常需要恢复之前某个状态的程序</li>
+<li>UML类图（来源《冒号课堂》）: <img src="/images/memento_pattern.jpg" alt="memento_pattern" style="zoom:60%;" />
+
+
+</li>
+</ul>
+<h4 id="访问者模式-visitor-pattern"><a href="#访问者模式-visitor-pattern" class="headerlink" title="访问者模式 - visitor pattern"></a>访问者模式 - visitor pattern</h4><ul>
+<li>预知识<ul>
+<li>关于确定一个方法调用具体位置的情况<ul>
+<li>如果方法名是唯一的，没有异议，直接能确定</li>
+<li>如果方法名不唯一，通常由“参数类型” + “参数个数”来确认<ul>
+<li>若分派在编译期决定、称“静态分派”</li>
+<li>若分派在运行期决定、称“动态分派”（子类型多态的实现原理）</li>
+<li>备注：python和go都是原生不支持函数重载</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>单分派<ul>
+<li>在运行期，根据方法的接收者（即所属对象）来决定调用的情况【单指的就是只参考了所属对象这一个参数】</li>
+<li>大多数常见语言都是此机制（Python、C++、Java…)</li>
+</ul>
+</li>
+<li>双分派<ul>
+<li>根据 方法的接收者（即所属对象） + 参数的数量以及类型 共同决定调用</li>
+<li>少数语言支持（Clojure、Groovy、Dylan）</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>TODO、由于python和go都不支持函数重载，用的少、暂时掠过</li>
+</ul>
+<h4 id="迭代器模式-iterator-pattern"><a href="#迭代器模式-iterator-pattern" class="headerlink" title="迭代器模式 - iterator pattern"></a>迭代器模式 - iterator pattern</h4><ul>
+<li><p>将遍历单独提出来成为一个Interface，从而分离了对象与对象的遍历，带来的<strong>优势</strong>是</p>
+<ul>
+<li>可以方便的切换具体迭代的方式/算法而不修改对象本身</li>
+<li>针对特定的数据结构、语言可预先写好一些高性能/基础的遍历方式供用户使用</li>
+<li>基于此Interface、方便用户开发自己的遍历算法并使用</li>
+</ul>
+</li>
+<li><p>核心：赋予了用户灵活选择/自定义对容器的遍历方式</p>
+</li>
+<li><p>UML类图（来源《冒号课堂》）</p>
+<img src="/images/iterator_pattern.jpg" alt="iterator_pattern" style="zoom:60%;" /></li>
+<li><p>调用举例：<br>aggregate = ConcreteAggregate()<br>// … 填充元素<br>iterator = aggregate.createIterator(ConcrteIterator)   // 若要不同的遍历方式/限制只需换对应的ConcrteIterator即可<br>while iterator.next() {<br>​    //….</p>
+<p>}</p>
+</li>
+</ul>
+<h4 id="解释器模式-interpreter-pattern"><a href="#解释器模式-interpreter-pattern" class="headerlink" title="解释器模式 - interpreter pattern"></a>解释器模式 - interpreter pattern</h4><ul>
+<li>应用：为某个语言定义其语法表示，并且写出一个解释器用于处理此语法</li>
+<li>UML类图（来源《冒号课堂》）<img src="/images/interpreter_pattern.jpg" alt="interpreter_pattern" style="zoom:70%;" />
+
+
+</li>
+</ul>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><blockquote>
+<p>《冒号课堂》第13章第3节</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag"># 设计模式</a>
+              <a href="/tags/%E7%BC%96%E7%A8%8B%E9%80%9A%E7%94%A8/" rel="tag"># 编程通用</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/08/29/%E8%AF%BB%E6%87%82UML%E5%9B%BE/" rel="prev" title="读懂UML图">
+      <i class="fa fa-chevron-left"></i> 读懂UML图
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#行为"><span class="nav-number">1.</span> <span class="nav-text">行为</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#涉及到的设计模式"><span class="nav-number">2.</span> <span class="nav-text">涉及到的设计模式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#职责链模式-chain-of-responsibility-pattern"><span class="nav-number">2.1.</span> <span class="nav-text">职责链模式 - chain of responsibility pattern</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#命令模式-command-pattern"><span class="nav-number">2.2.</span> <span class="nav-text">命令模式 - command pattern</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#观察者-发布订阅模式-observer-pattern"><span class="nav-number">2.3.</span> <span class="nav-text">观察者&#x2F;发布订阅模式 - observer pattern</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#中介模式-mediator-pattern"><span class="nav-number">2.4.</span> <span class="nav-text">中介模式 - mediator pattern</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#状态模式-state-pattern"><span class="nav-number">2.5.</span> <span class="nav-text">状态模式 - state pattern</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#备忘录模式-memento-pattern"><span class="nav-number">2.6.</span> <span class="nav-text">备忘录模式 - memento pattern</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#访问者模式-visitor-pattern"><span class="nav-number">2.7.</span> <span class="nav-text">访问者模式 - visitor pattern</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#迭代器模式-iterator-pattern"><span class="nav-number">2.8.</span> <span class="nav-text">迭代器模式 - iterator pattern</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#解释器模式-interpreter-pattern"><span class="nav-number">2.9.</span> <span class="nav-text">解释器模式 - interpreter pattern</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">-_-</p>
+  <div class="site-description" itemprop="description">15652616715</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">10</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">-_-</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'edf9b4cf38817a8e9705',
+      clientSecret: 'a9e7395b37100257f052db822d40873b9fca18a5',
+      repo: 'pillipanda.github.io',
+      owner: 'pillipanda',
+      admin: ['pillipanda'],
+      id: '4f6e66abd53693ac820316b3e1b6c5a0',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>
