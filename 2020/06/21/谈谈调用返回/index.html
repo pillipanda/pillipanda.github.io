@@ -46,15 +46,15 @@
   };
 </script>
 
-  <meta name="description" content="由于调用很多情况下都存在子调用、而子调用链上很可能某一环就抛出了异常，此文主要讲我是怎么看待和处理这种情况的  不好的做法什么都不做12345678910111213141516171819202122232425262728def c():    raise Exception(&#39;xxx&#39;)def b():    # dong pre things    c()    # do">
+  <meta name="description" content="由于调用很多情况下都存在子调用、而子调用链上很可能某一环就抛出了异常，此文主要讲我是怎么看待和处理这种情况的">
 <meta property="og:type" content="article">
 <meta property="og:title" content="谈谈调用链中的异常处理问题">
 <meta property="og:url" content="http://yoursite.com/2020/06/21/%E8%B0%88%E8%B0%88%E8%B0%83%E7%94%A8%E8%BF%94%E5%9B%9E/index.html">
 <meta property="og:site_name" content="pd">
-<meta property="og:description" content="由于调用很多情况下都存在子调用、而子调用链上很可能某一环就抛出了异常，此文主要讲我是怎么看待和处理这种情况的  不好的做法什么都不做12345678910111213141516171819202122232425262728def c():    raise Exception(&#39;xxx&#39;)def b():    # dong pre things    c()    # do">
+<meta property="og:description" content="由于调用很多情况下都存在子调用、而子调用链上很可能某一环就抛出了异常，此文主要讲我是怎么看待和处理这种情况的">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2020-06-21T14:41:36.000Z">
-<meta property="article:modified_time" content="2020-08-29T09:27:03.072Z">
+<meta property="article:modified_time" content="2020-08-30T13:25:09.079Z">
 <meta property="article:author" content="-_-">
 <meta property="article:tag" content="python">
 <meta property="article:tag" content="编程通用">
@@ -202,7 +202,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-08-29 17:27:03" itemprop="dateModified" datetime="2020-08-29T17:27:03+08:00">2020-08-29</time>
+                <time title="修改时间：2020-08-30 21:25:09" itemprop="dateModified" datetime="2020-08-30T21:25:09+08:00">2020-08-30</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -230,6 +230,8 @@
         <blockquote>
 <p>由于调用很多情况下都存在子调用、而子调用链上很可能某一环就抛出了异常，此文主要讲我是怎么看待和处理这种情况的</p>
 </blockquote>
+<a id="more"></a>
+
 <h3 id="不好的做法"><a href="#不好的做法" class="headerlink" title="不好的做法"></a>不好的做法</h3><h4 id="什么都不做"><a href="#什么都不做" class="headerlink" title="什么都不做"></a>什么都不做</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">def c():</span><br><span class="line">    raise Exception(&#39;xxx&#39;)</span><br><span class="line"></span><br><span class="line">def b():</span><br><span class="line">    # dong pre things</span><br><span class="line">    c()</span><br><span class="line">    # dong after things</span><br><span class="line"></span><br><span class="line">def a():</span><br><span class="line">    b()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:</span><br><span class="line">    a()</span><br><span class="line"></span><br><span class="line">&quot;&quot;&quot;</span><br><span class="line">输出：</span><br><span class="line">Traceback (most recent call last):</span><br><span class="line">  File &quot;&#x2F;...&#x2F;tmp.py&quot;, line 14, in &lt;module&gt;</span><br><span class="line">    a()</span><br><span class="line">  File &quot;&#x2F;...&#x2F;tmp.py&quot;, line 10, in a</span><br><span class="line">    b()</span><br><span class="line">  File &quot;&#x2F;...&#x2F;tmp.py&quot;, line 6, in b</span><br><span class="line">    c()</span><br><span class="line">  File &quot;&#x2F;...&#x2F;tmp.py&quot;, line 2, in c</span><br><span class="line">    raise Exception(&#39;xxx&#39;)</span><br><span class="line">Exception: xxx</span><br><span class="line">&quot;&quot;&quot;</span><br></pre></td></tr></table></figure>
 <pre><code>1. 这样导致程序直接退出了、而得到的报错信息是程序报错的信息，这样是不能够提供给用户（非开发人员）的
 2. 有可能在b环节里、调用c压根不是个重要的事情（假设是打日志到某日志收集平台）、那么由于c发生的异常导致整体让用户认为操作失败了是完全没有必要的

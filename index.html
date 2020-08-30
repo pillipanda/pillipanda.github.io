@@ -184,7 +184,7 @@
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
           
-            <a href="/2020/08/30/%E8%A1%8C%E4%B8%BA%E7%9B%B8%E5%85%B3%E7%9A%849%E7%A7%8D%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">行为类相关的设计模式</a>
+            <a href="/2020/08/30/%E8%A1%8C%E4%B8%BA%E7%9B%B8%E5%85%B3%E7%9A%849%E7%A7%8D%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">行为类相关的9种设计模式</a>
         </h1>
 
         <div class="post-meta">
@@ -195,7 +195,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2020-08-30 20:41:36 / 修改时间：21:00:09" itemprop="dateCreated datePublished" datetime="2020-08-30T20:41:36+08:00">2020-08-30</time>
+              <time title="创建时间：2020-08-30 20:41:36 / 修改时间：21:12:39" itemprop="dateCreated datePublished" datetime="2020-08-30T20:41:36+08:00">2020-08-30</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -220,144 +220,15 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <blockquote>
-<p><strong>前言</strong></p>
-<p>请先确保能读懂UML类图。UML类图基础 <a href="https://pillipanda.github.io/2020/08/29/%E8%AF%BB%E6%87%82UML%E5%9B%BE/" target="_blank" rel="noopener">可参考</a></p>
-</blockquote>
-<h3 id="行为"><a href="#行为" class="headerlink" title="行为"></a>行为</h3><p>即动态、关注点在于对象之间动态（通信、交互）的部分</p>
-<h3 id="涉及到的设计模式"><a href="#涉及到的设计模式" class="headerlink" title="涉及到的设计模式"></a>涉及到的设计模式</h3><h4 id="职责链模式-chain-of-responsibility-pattern"><a href="#职责链模式-chain-of-responsibility-pattern" class="headerlink" title="职责链模式 - chain of responsibility pattern"></a>职责链模式 - chain of responsibility pattern</h4><ul>
-<li>应用场景：<u>常用于事件模型</u>，这种情况下不变的是事件的发生，变化的是事件发生后在不同时空间的不同处理流程（分离变化）</li>
-<li>举例：<ul>
-<li>web框架的middleware</li>
-</ul>
-</li>
-<li>优势：<ul>
-<li>处理链可以动态变动</li>
-<li>容易对外提供扩展点加入到处理链</li>
-</ul>
-</li>
-<li>UML图（来源《冒号课堂》）<img src="/images/chain_of_responsibility.jpg" alt="chain_of_responsibility" style="zoom:80%;" /></li>
-<li>备注：虽然上图中的<em>Handler</em>是抽象类（斜体的），但是实际用Interface也是完全可以的、具体使用什么就看你的应用中的具体需求了</li>
-<li>体现的设计原则：<ul>
-<li>单一职责原则：否则一次处理的代码集合了各种职责</li>
-<li>最少知识原则：每个处理点只关心自己</li>
-</ul>
-</li>
-<li>对比装饰者模式：职责模式关注行为上的职责分解、装饰者模式关注结构上的职责结合（但是职责模式也可实现装饰者模式的效果、即每个点正好就是对某对象进行装饰）</li>
-</ul>
-<h4 id="命令模式-command-pattern"><a href="#命令模式-command-pattern" class="headerlink" title="命令模式 - command pattern"></a>命令模式 - command pattern</h4><ul>
-<li>应用场景：在出于特定目的，需要控制命令的执行者/执行时机的场景（e.g: 游戏用户的此局游戏数据的记录、等到用户全部完成后再触发各项纪录“入库”）</li>
-<li>实现核心：封装需要执行的命令及其上下文成为一个“命令对象”，而后在特定的时机由触发者触发此命令(回调)的执行。从而实现了命令的接收与执行在时间和空间上的解耦</li>
-<li>UML图（来源《冒号课堂》）: <ul>
-<li>在Receiver与Invoker之间加入了间接的Command对象、如Invoker可以不断的取出特定数量的Command对象并调用其execute()方法即可（不需要关心其是什么、需要什么，因为这些它都自己封装好了）</li>
-<li>这里还需要注意的一点是对Receiver这个对象的理解，表示的是“执行对象”。client接收到命令后找到实际的执行者(receiver)、和执行上下文一起封装为一个command对象（如执行者是个函数、执行上下文是其参数）<br><img src="/images/command_pattern.jpg" alt="command_pattern"></li>
-</ul>
-</li>
-<li>体现的设计原则<ul>
-<li>间接原则&amp;保变原则：通过Command这个间接对象、保护了command的执行者、执行时间的变化性。从而可以是不同的client构造了不同的receiver以及context、但是执行的接口是统一的、invoker之间调用执行即可</li>
-</ul>
-</li>
-</ul>
-<h4 id="观察者-发布订阅模式-observer-pattern"><a href="#观察者-发布订阅模式-observer-pattern" class="headerlink" title="观察者/发布订阅模式 - observer pattern"></a>观察者/发布订阅模式 - observer pattern</h4><ul>
-<li>应用场景：应对一对多的情况、当一个对象接收到消息/状态发生改变后、多个平等的依赖者对象都需要收到消息。也是常用于事件驱动的编程。</li>
-<li>举例：用户登录后、发欢迎邮件、初始化账户默认信息等等依赖对象都收到消息然后自己进行对应处理</li>
-<li>UML图（来源《冒号课堂》）: <img src="/images/observer_pattern.jpg" alt="observer_pattern" style="zoom:50%;" /></li>
-<li>优势：解耦原本是同级别的依赖对象（observer）。对比下如果只有一个消息接收入口、那么此入口需要完成多个对象的状态更新调用，而通过消息的多方传播，每个对象都只需要对自己负责即可</li>
-<li>体现的设计原则<ul>
-<li>好莱坞原则：don‘t call us, we‘ll call you</li>
-<li>控制反转：此时subject是底层、而observer是高层。如MVC模型中的底层（模型 - model）与高层（视图 - view）之间</li>
-</ul>
-</li>
-</ul>
-<h4 id="中介模式-mediator-pattern"><a href="#中介模式-mediator-pattern" class="headerlink" title="中介模式 - mediator pattern"></a>中介模式 - mediator pattern</h4><ul>
-<li>设计核心：利用纯虚构原则造出一个信息交换中心，改变一群对象之间的信息交流为必须要知道具体目的对象为只需要知道信息交换中心即可<img src="/images/mediator_explain.jpeg" alt="mediator_explain" style="zoom:30%;" /></li>
-<li>应用举例：其实DNS系统就是这样的、其作为域名到ip的映射、如果没有中心服务器，总不能每台个人电脑都保存一个完备的映射表吧，那样对于存储以及更新的问题都太麻烦了</li>
-<li>UML类图（来源《冒号课堂》）: <img src="/images/mediator_pattern.jpg" alt="mediator_pattern" style="zoom:50%;" /></li>
-<li>对比观察者模式：<ul>
-<li>相比观察者模式的具体对象是功能单一的观察者(单向)、中介模式的对象可能即是观察者又是发布者（双向），且相互之间的观察/发布关系复杂</li>
-<li>中介者会形成一个上帝视角的地方、从而可以做到如编排顺序等等操作、观察者模式是做不到的</li>
-</ul>
-</li>
-<li>体现的设计原则<ul>
-<li>局部化原则 &amp; 关注点分离原则：将多有的通信关系/逻辑集中起来</li>
-<li>迪米特法则/最少知识原则：发布者不需要知道具体的接收者、只是发布到中介即可。（特别想象下、在分布式情况下、若某发布者的接收者发生了变化、使用中介模式的话更新起来会特别的稳定/方便！）</li>
-</ul>
-</li>
-</ul>
-<h4 id="状态模式-state-pattern"><a href="#状态模式-state-pattern" class="headerlink" title="状态模式 - state pattern"></a>状态模式 - state pattern</h4><ul>
-<li>设计核心：一个对象可能有多种状态，且在不同的状态下的行为是不同的。而引起状态的变化需要事件（event）的发生、与此同时可能会伴随着别的一些操作（action）[额外操作不是一定有的、也有可能事件发生只改变状态]</li>
-<li>应用举例：同样的一个执行操作，对于不同身份的user表现不同，如果是superuser就直接执行、如果是普通用户就提示会进入审批、如果是未登录用户直接拒绝</li>
-<li>UML类图（来源《冒号课堂》）: <img src="/images/state_pattern.jpg" alt="state_pattern" style="zoom:50%;" /></li>
-<li>由上图可见、核心实现是：<ul>
-<li>单独维护状态类</li>
-<li>不同状态的行为通过委托到具体的状态类来执行</li>
-</ul>
-</li>
-<li>体现的设计原则<ul>
-<li>保变原则：将与state相关的打包独立出为单独的对象</li>
-</ul>
-</li>
-</ul>
-<h4 id="备忘录模式-memento-pattern"><a href="#备忘录模式-memento-pattern" class="headerlink" title="备忘录模式 - memento pattern"></a>备忘录模式 - memento pattern</h4><ul>
-<li>应用：用于常需要恢复之前某个状态的程序</li>
-<li>UML类图（来源《冒号课堂》）: <img src="/images/memento_pattern.jpg" alt="memento_pattern" style="zoom:60%;" />
-
-
-</li>
-</ul>
-<h4 id="访问者模式-visitor-pattern"><a href="#访问者模式-visitor-pattern" class="headerlink" title="访问者模式 - visitor pattern"></a>访问者模式 - visitor pattern</h4><ul>
-<li>预知识<ul>
-<li>关于确定一个方法调用具体位置的情况<ul>
-<li>如果方法名是唯一的，没有异议，直接能确定</li>
-<li>如果方法名不唯一，通常由“参数类型” + “参数个数”来确认<ul>
-<li>若分派在编译期决定、称“静态分派”</li>
-<li>若分派在运行期决定、称“动态分派”（子类型多态的实现原理）</li>
-<li>备注：python和go都是原生不支持函数重载</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>单分派<ul>
-<li>在运行期，根据方法的接收者（即所属对象）来决定调用的情况【单指的就是只参考了所属对象这一个参数】</li>
-<li>大多数常见语言都是此机制（Python、C++、Java…)</li>
-</ul>
-</li>
-<li>双分派<ul>
-<li>根据 方法的接收者（即所属对象） + 参数的数量以及类型 共同决定调用</li>
-<li>少数语言支持（Clojure、Groovy、Dylan）</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>TODO、由于python和go都不支持函数重载，用的少、暂时掠过</li>
-</ul>
-<h4 id="迭代器模式-iterator-pattern"><a href="#迭代器模式-iterator-pattern" class="headerlink" title="迭代器模式 - iterator pattern"></a>迭代器模式 - iterator pattern</h4><ul>
-<li><p>将遍历单独提出来成为一个Interface，从而分离了对象与对象的遍历，带来的<strong>优势</strong>是</p>
-<ul>
-<li>可以方便的切换具体迭代的方式/算法而不修改对象本身</li>
-<li>针对特定的数据结构、语言可预先写好一些高性能/基础的遍历方式供用户使用</li>
-<li>基于此Interface、方便用户开发自己的遍历算法并使用</li>
-</ul>
-</li>
-<li><p>核心：赋予了用户灵活选择/自定义对容器的遍历方式</p>
-</li>
-<li><p>UML类图（来源《冒号课堂》）</p>
-<img src="/images/iterator_pattern.jpg" alt="iterator_pattern" style="zoom:60%;" /></li>
-<li><p>调用举例：<br>aggregate = ConcreteAggregate()<br>// … 填充元素<br>iterator = aggregate.createIterator(ConcrteIterator)   // 若要不同的遍历方式/限制只需换对应的ConcrteIterator即可<br>while iterator.next() {<br>​    //….</p>
-<p>}</p>
-</li>
-</ul>
-<h4 id="解释器模式-interpreter-pattern"><a href="#解释器模式-interpreter-pattern" class="headerlink" title="解释器模式 - interpreter pattern"></a>解释器模式 - interpreter pattern</h4><ul>
-<li>应用：为某个语言定义其语法表示，并且写出一个解释器用于处理此语法</li>
-<li>UML类图（来源《冒号课堂》）<img src="/images/interpreter_pattern.jpg" alt="interpreter_pattern" style="zoom:70%;" />
-
-
-</li>
-</ul>
-<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><blockquote>
-<p>《冒号课堂》第13章第3节</p>
-</blockquote>
-
+          <h3 id="行为"><a href="#行为" class="headerlink" title="行为"></a>行为</h3><p>即动态、关注点在于对象之间动态（通信、交互）的部分</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/08/30/%E8%A1%8C%E4%B8%BA%E7%9B%B8%E5%85%B3%E7%9A%849%E7%A7%8D%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -407,7 +278,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-08-30 10:33:56" itemprop="dateModified" datetime="2020-08-30T10:33:56+08:00">2020-08-30</time>
+                <time title="修改时间：2020-08-30 21:13:28" itemprop="dateModified" datetime="2020-08-30T21:13:28+08:00">2020-08-30</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -435,9 +306,14 @@
           <blockquote>
 <p>由于我写的设计模式总结相关博客的开头都冗写了请读者能先看懂UML类图、故而这里顺便总结下方便参阅</p>
 </blockquote>
-<h3 id="表示类"><a href="#表示类" class="headerlink" title="表示类"></a>表示类</h3><p>这个本身概念比较清晰（不容易又理解分歧点）、不少文章已经写的很清楚了，<a href="https://zhuanlan.zhihu.com/p/109655171" target="_blank" rel="noopener">如见</a></p>
-<h3 id="表示关系"><a href="#表示关系" class="headerlink" title="表示关系"></a>表示关系</h3><p><img src="/images/uml_links.png" alt="uml_links"></p>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/08/29/%E8%AF%BB%E6%87%82UML%E5%9B%BE/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -456,7 +332,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/08/23/%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84%E8%AE%BE%E8%AE%A1&%E4%B8%8E%E4%B9%8B%E7%9B%B8%E5%85%B3%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/08/23/%E7%BB%93%E6%9E%84%E5%9E%8B%E7%9B%B8%E5%85%B3%E7%9A%847%E4%B8%AA%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -470,7 +346,7 @@
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
           
-            <a href="/2020/08/23/%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84%E8%AE%BE%E8%AE%A1&%E4%B8%8E%E4%B9%8B%E7%9B%B8%E5%85%B3%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">系统构成 与 结构型，以及结构型相关的7个设计模式</a>
+            <a href="/2020/08/23/%E7%BB%93%E6%9E%84%E5%9E%8B%E7%9B%B8%E5%85%B3%E7%9A%847%E4%B8%AA%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">结构型相关的7个设计模式</a>
         </h1>
 
         <div class="post-meta">
@@ -487,7 +363,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-08-30 20:54:03" itemprop="dateModified" datetime="2020-08-30T20:54:03+08:00">2020-08-30</time>
+                <time title="修改时间：2020-08-30 21:17:53" itemprop="dateModified" datetime="2020-08-30T21:17:53+08:00">2020-08-30</time>
               </span>
 
           
@@ -501,133 +377,16 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <blockquote>
-<p><strong>前言</strong></p>
-<p>请先确保能读懂UML类图。UML类图基础 <a href="https://pillipanda.github.io/2020/08/29/%E8%AF%BB%E6%87%82UML%E5%9B%BE/" target="_blank" rel="noopener">可参考</a></p>
-</blockquote>
-<h3 id="系统构成-与-系统结构"><a href="#系统构成-与-系统结构" class="headerlink" title="系统构成 与 系统结构"></a>系统构成 与 系统结构</h3><h4 id="系统构成"><a href="#系统构成" class="headerlink" title="系统构成"></a>系统构成</h4><p>系统的构成结构、主要元素有层（layer）与 区（partition），层是按照抽象层次进行的水平划分、是经过抽象提取出来的，高层建立与低层之上（单向依赖）；而区是同一层中的垂直划分（同层的区是双向合作关系）；进入区里面再到包（package层次），最后具体到类（class）</p>
+          <h3 id="系统构成与系统结构"><a href="#系统构成与系统结构" class="headerlink" title="系统构成与系统结构"></a>系统构成与系统结构</h3><h4 id="系统构成"><a href="#系统构成" class="headerlink" title="系统构成"></a>系统构成</h4><p>系统的构成结构、主要元素有层（layer）与 区（partition），层是按照抽象层次进行的水平划分、是经过抽象提取出来的，高层建立与低层之上（单向依赖）；而区是同一层中的垂直划分（同层的区是双向合作关系）；进入区里面再到包（package层次），最后具体到类（class）</p>
 <h4 id="结构型"><a href="#结构型" class="headerlink" title="结构型"></a>结构型</h4><p>系统结构类型相关的设计模式的一大关注点是其是否利用继承层级的类结构和聚合层级的对象结构在上面提到的类层级下构建了更高层的抽象 or 更大的复合结构（另一个关注点就是其对于GRASP和SOLID等设计原则的遵循）</p>
-<h3 id="结构型的设计模式"><a href="#结构型的设计模式" class="headerlink" title="结构型的设计模式"></a>结构型的设计模式</h3><h4 id="桥梁模式（bridge-design-pattern）"><a href="#桥梁模式（bridge-design-pattern）" class="headerlink" title="桥梁模式（bridge design pattern）"></a>桥梁模式（bridge design pattern）</h4><ul>
-<li>应用场景：若某个类存在两个独立的变化维度，桥梁模式将其<u>分解为两个独立的等级结构，并且通过一个“桥”关联起来，使其两个维度可以独立变化的同时又通过“桥”连接到一起（从而组合使用功能）</u></li>
-<li>应用举例：<ul>
-<li>跨平台播放器：<ul>
-<li>假设处理流程是<ul>
-<li>通过调用特定视频格式的信息提取代码来提取信息</li>
-<li>通过调用特定平台的播放组件并且接受提取出来的信息来播放 </li>
-</ul>
-</li>
-<li>如果是采用继承模式就需要写a * b个类（如window-AVI处理类，mac-AVI处理类…）,</li>
-<li>采用桥接模式后改成a + b个类（避免了子类爆炸），步骤上分别委托到各自中去执行，且各自的代码实现独立变化</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>图示<br><img src="/images/bridge_pattern.png" alt="img"></li>
-<li>代码示例<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">avi_parser &#x3D; AviParser()</span><br><span class="line">player &#x3D; WindowsPlayer(aviparser, &quot;xxx.avi&quot;)</span><br><span class="line">player.play()</span><br></pre></td></tr></table></figure></li>
-<li>优势<ul>
-<li>客户端可以针对两个维度的抽象层编程，在程序运行时再动态确定两个维度的子类，动态组合对象，将两个独立变化的维度完全解耦，以便能够灵活地扩充任一维度而对另一维度不造成任何影响</li>
-<li>基于组合来避免了在此种情景中基于继承的子类爆炸问题</li>
-</ul>
-</li>
-<li>同理、可以推导到多维</li>
-</ul>
-<h4 id="适配器模式（adapter-design-pattern）"><a href="#适配器模式（adapter-design-pattern）" class="headerlink" title="适配器模式（adapter design pattern）"></a>适配器模式（adapter design pattern）</h4><ul>
-<li>应用场景：接口转换器，用于<u>解决已有的服务提供者与服务使用者之前的接口不兼容</u>的问题</li>
-<li>两种实现方式：（*下面用到的单词解释：Target表示要转化成的接口定义，Adaptee是不兼容ITarget接口定义的接口，Adaptor将Adaptee转化为一组符合Target定义的接口）<ul>
-<li><strong>类适配器</strong>：基于继承关系实现（优势：若Target与Adaptee有部分一致的接口就可以不用再在Adapter中实现了）<br><img src="/images/adaptor_genera.png" alt="adaptor_genera"></li>
-<li><strong>对象适配器</strong>：基于组合关系实现（优势：组合结构本身比继承结构更灵活、更拥抱变化）<br><img src="/images/adaptor_comp.png" alt="adaptor_genera"></li>
-</ul>
-</li>
-<li>用户视角：调用适配器类进行访问</li>
-<li>在设计原则上、其表现了：<ul>
-<li>保变原则：将容易变化的地方（调用方式）独立出来与核心实现解藕</li>
-<li>开闭原则：对扩张开放、对修改封闭。这里就是通过适配器来扩展代码适用范围</li>
-<li>纯虚构原则：将一组高内聚的职责分配给一个虚构的或处理方便的“行为”类，它并不是问题域中的概念，而是虚构的事物，以达到支持（这里的Target、Adaptee之间的）高内聚、低耦合和复用。（这里的Adapter就是此虚构的行为类）</li>
-</ul>
-</li>
-</ul>
-<h4 id="装饰模式（decorator-design-pattern）"><a href="#装饰模式（decorator-design-pattern）" class="headerlink" title="装饰模式（decorator design pattern）"></a>装饰模式（decorator design pattern）</h4><ul>
-<li>应用场景：主要用于<u>灵活的对原始类进行可组合的功能增强</u>，也避免了如果要基于继承实现同样效果的子类膨胀问题</li>
-<li>举例说明：一个显示组件类Widget，其可开/闭的选项有 加边框、滚动条、可拖动、可缩放…<ul>
-<li>继承实现：如ScrollableWidget、ZoomableWidget…，最后甚至有BorderedScrollableDraggableWidget类 -&gt; 子类膨胀</li>
-<li>装饰者实现：见下面类图<ul>
-<li>若要实现上面的BorderedScrollableDraggableWidget 可通过new DragDecorator(new ScrollDecorator(new BorderDecorator(someWidget)))实现</li>
-<li>这里类图需要注意的是WidgetDecorator既继承了Widget、又由Widget聚合而成。<ul>
-<li>继承：为了保持装饰后的类型与未装饰是一致的，从而保持透明性避免引起别的使用地方可能出现的类型问题 &amp; 同时也保证了嵌套时的输入类型一直都是widget类型（否则不可嵌套）</li>
-<li>聚合：是从某种意义上、其只是widget的组装者，但是也可以看作是其包含了widget、从而是聚合关系<br><img src="/images/decorator_widget.jpg" alt="decorator_widget"></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>用户视角：可同时访问装饰类与实现类、并且自己组合选择装饰类来对实现类进行“装饰”</li>
-<li>注意点：<ul>
-<li>装饰者模式可嵌套、也就是可以动态的增加/减少，这也是继承办不到的</li>
-<li>装饰装饰、顾名思义是与“核心”无关的东西，如这里someWidget自己内部的核心逻辑是完全隔离的，装饰模式只应该提供辅助性/边缘性的职责。同时这也是符合<strong>关注点分离原则</strong>（对于想改变核心的情况、应该使用<strong>策略模式</strong>）</li>
-</ul>
-</li>
-<li>构造了更大的复合结构</li>
-</ul>
-<h4 id="代理模式-（proxy-design-pattern）"><a href="#代理模式-（proxy-design-pattern）" class="headerlink" title="代理模式 （proxy design pattern）"></a>代理模式 （proxy design pattern）</h4><ul>
-<li>应用场景：对原始类的<u>访问控制（组合 + 选择性委托），功能增强（继承 + 扩展）</u></li>
-<li>举例说明：如防火墙、C++的智能指针、写时拷贝</li>
-<li>用户视角：调用代理类进行创建，原始类不再能/推荐被使用</li>
-<li>对比下装饰器模式<ul>
-<li>代理模式非返回原始类型 &amp; 不可嵌套的</li>
-<li>用于替代原始类而不是装饰原始类</li>
-</ul>
-</li>
-</ul>
-<h4 id="门面-外观模式（facade-design-pattern）"><a href="#门面-外观模式（facade-design-pattern）" class="headerlink" title="门面/外观模式（facade design pattern）"></a>门面/外观模式（facade design pattern）</h4><ul>
-<li>应用场景：一般用于写类库时，考虑使用者在基于此类库实现某功能时，是需要能相对层级浅、数量少的引入，or 需要数量多、层级深的引入</li>
-<li>图示说明：<img src="/images/facade pattern.jpg" alt="facade pattern" style="zoom:72%;" /></li>
-<li>使用优势<ul>
-<li>用户使用的心智负担小</li>
-<li>子系统各个服务类若发生变化不同意影响到用户（假设最原始的就是直接引入此类了，而后期又对此类进行了改名等变化）</li>
-</ul>
-</li>
-<li>对比适配器模式，外观模式构造了一个抽象层次更高的类，其子系统是实现细节，而外界使用者不再关心实现细节、而是直接通过Facade类即可完成使用。而适配器模式是平层次的</li>
-</ul>
-<h4 id="组合-复合模式（composite-design-pattern）"><a href="#组合-复合模式（composite-design-pattern）" class="headerlink" title="组合/复合模式（composite design pattern）"></a>组合/复合模式（composite design pattern）</h4><ul>
-<li>应用场景：特别指定应用于能够表示为树形结构、且叶子结点可以是不同类型但是一定有相同的抽象操作方法/属性的情景（树形结构提供了一种遍历所有节点的方式以及层级关系）。在这种场景下<u>使用组合模式来构建操作一致性</u>（从复合对象作为入口后可不用关心具体对象，直接调用复合对象提供的方式/属性即可达到全部操作的目的）</li>
-<li>举例：文件系统里面的文件与目录（复合类型是文件系统，具体类型是文件/目录），公司结构中的员工与部门（复合类型是公司，具体类型是员工/部门）</li>
-<li>两种类型：<ul>
-<li>透明型: 复合类型暴露的方法是具体类型方法的合集<br><img src="/images/composite_trans.jpg" alt="composite_trans"></li>
-<li>安全型：复合类型暴露的方法是具体类型方法的交集<img src="/images/composite_safe.png" alt="facade pattern" style="zoom:50%;" /></li>
-</ul>
-</li>
-<li>一个具体的例子：假设一个页面有各种各样的前端组件（此时复合类型是front_page），而此复合类型下面可以有各种具体的组件类型（假设有Container、Button、Text、……）<ul>
-<li>假设对于一个已经渲染好的页面，用户突然要缩小显示为90%，则首先：基于树形结构，以复合类为入口能够简单滴遍历到各个叶子的具体类，然后复合类又规范了一个假设名字叫zoom的方法，则我们是知道叶子类都有此方法，故遍历到的时候就不需要考虑类型直接调用即可（当然，如上面安全型表示的，有非交集的方法，这种调用就只利用了方便的遍历，具体能不能调用还要再做判断）</li>
-<li>再看看上面的例子，集合类是个实现类，叶子节点都是继承/泛化它，所以继承带来的好处我们都能够方便的用上（比如渲染前一开始就在复合类上设置了能有border的组件都要默认显示border的标示，则后面的叶子节点就不用设置直接能访问到了）</li>
-</ul>
-</li>
-<li>构造了更大的复合结构</li>
-</ul>
-<h4 id="享元模式（flyweight-design-pattern）"><a href="#享元模式（flyweight-design-pattern）" class="headerlink" title="享元模式（flyweight design pattern）"></a>享元模式（flyweight design pattern）</h4><ul>
-<li><strong>23个设计模式中唯一一个针对性能而不是设计的模式</strong></li>
-<li>应用场景：针对一类粒度小、数量多、相识度高、种类有限、具有值语义的对象，<u>通过共享其内在相同部分来复用对象、节省内存，节约创建</u>，共同部分之外的上下文才是每个对象自己独有的、需要维护的</li>
-<li>备注 - 值语义：目标对象由源对象拷贝生成，且生成后与源对象完全无关，彼此独立存在，改变互不影响</li>
-<li>实现的注意点：<ul>
-<li>核心是抽象出一类对象内在的、不因环境而异的状态，封装后作为共享单元（flyweight）</li>
-<li>由于要共享，所以不能每次由客户自己亲自创建对象，一般是通过工厂模式进行创建</li>
-</ul>
-</li>
-<li>举例：一个象棋游戏厅，房间上千万，但是象棋的类型（相、车、马…）、颜色是一一对应且很少的，如果每个房间都初始化自己的多有棋子对象，就会有太多重复。从而可以将类型和颜色作为享元，位置作为外部上下文从而节约大量的内存</li>
-</ul>
-<h3 id="上面的几种设计模式小节"><a href="#上面的几种设计模式小节" class="headerlink" title="上面的几种设计模式小节"></a>上面的几种设计模式小节</h3><ul>
-<li>桥梁模式：将一个类多个维度的变化拆解为单独的类并且通过组合作为桥来使用，分离变化</li>
-<li>适配器模式：解决已有服务提供者与服务使用者之前的接口不兼容的问题</li>
-<li>装饰模式：灵活的对原始类进行可组合/撤销的功能增强</li>
-<li>代理模式：对原始类的 访问控制（组合 + 选择性委托），功能增强（继承 + 扩展）</li>
-<li>门面模式：提供了粗粒度、抽象层次更高的接口，以简化/统一外部对子系统的访问/使用，也隔离了变化</li>
-<li>复合模式：抽象理解和统一管理不同的类型</li>
-<li>享元模式：减少对象创建 + 节约内存</li>
-</ul>
-<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><blockquote>
-<p>《冒号课堂》第13章第2节、其中有几张不清晰的图直接来自此书<br>两个讲桥接模式的文章：<a href="https://wiki.jikexueyuan.com/project/design-pattern-structurized/bridge-two.html" target="_blank" rel="noopener">1</a>、<a href="https://www.barretlee.com/blog/2017/01/16/the-bridge-pattern-in-design-patterns/" target="_blank" rel="noopener">2</a></p>
-</blockquote>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/08/23/%E7%BB%93%E6%9E%84%E5%9E%8B%E7%9B%B8%E5%85%B3%E7%9A%847%E4%B8%AA%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -677,7 +436,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-08-30 20:53:18" itemprop="dateModified" datetime="2020-08-30T20:53:18+08:00">2020-08-30</time>
+                <time title="修改时间：2020-08-30 21:17:32" itemprop="dateModified" datetime="2020-08-30T21:17:32+08:00">2020-08-30</time>
               </span>
 
           
@@ -691,54 +450,15 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <blockquote>
-<p><strong>前言</strong></p>
-<p>请先确保能读懂UML类图。UML类图基础 <a href="https://pillipanda.github.io/2020/08/29/%E8%AF%BB%E6%87%82UML%E5%9B%BE/" target="_blank" rel="noopener">可参考</a></p>
-</blockquote>
-<h3 id="结构说明"><a href="#结构说明" class="headerlink" title="结构说明"></a>结构说明</h3><p>下面将从简单到复杂的说明，实例化类有哪些方式、会说明每种方式的优势和弊端是什么</p>
-<h3 id="创建类实例的演进过程"><a href="#创建类实例的演进过程" class="headerlink" title="创建类实例的演进过程"></a>创建类实例的演进过程</h3><h4 id="构造器-如new和-init"><a href="#构造器-如new和-init" class="headerlink" title="构造器 [如new和__init__() ]"></a>构造器 [如new和__init__() ]</h4><p>   存在的问题：可能一个类能够使用多种初始化的方式<br>   如可以使用两种方法描述一个点的位置：笛卡尔坐标系 与 极坐标系<br>       Point(double x, double y)<br>       Point(double r, double theta)</p>
-<h4 id="静态方法"><a href="#静态方法" class="headerlink" title="静态方法"></a>静态方法</h4><ul>
-<li>优点<ul>
-<li>不同参数初始化实例<br>在类Point中写两个对应的静态方法用于创建即可、使用时如下：<br>​    Point p1 = Ponit.cartesian(1, 2)<br>​    Point p2 = Point.polar(1.0, Mth.PI/3)</li>
-<li>不同调用方式<br>如python里不能await __init__方法、但可以通过await一个静态async方法实现</li>
-</ul>
-</li>
-</ul>
-<h4 id="简单工厂-静态工厂-模式"><a href="#简单工厂-静态工厂-模式" class="headerlink" title="简单工厂/静态工厂 模式"></a>简单工厂/静态工厂 模式</h4><ul>
-<li>优点：<ul>
-<li><strong>类型隐藏</strong><br>使用构造方法时、明确的返回对应调用类型的实例、这就违背了<strong>面向接口编程</strong>的原则<br>相反使用静态工厂方法的时候就可以返回一个满足对应接口的对象而不用透露具体的对象给客户（从而此类型可以是公开/非公开/甚至动态加载的）<br>如：假设一个规则解析的类群（Parser &lt;— JsonParser、XmlParser, …）,则此时能够如下进行解藕</li>
-</ul>
-</li>
-<li>对应UML图<br><img src="/images/easy_fac.png" alt="easy_factory"></li>
-<li>缺点：<ul>
-<li>工厂类的职责成为了对接外部参数并且依据这些参数进行创建具体类的职责，所有的类的创建逻辑都集中在了这里面，从而导致在添加新的类的时候一定需要修改此创建方法（违背开闭原则）；特别需要注意的是在发展的过程中，有可能出现不同具体类的创建依赖不同条件的情况，此会导致这唯一工厂类的逻辑复杂并降低可维护性</li>
-</ul>
-</li>
-</ul>
-<h4 id="工厂方法"><a href="#工厂方法" class="headerlink" title="工厂方法"></a>工厂方法</h4><ul>
-<li>核心思维：新加抽象工厂约束具体工厂对外提供的接口、并且将具体类型的创建延迟到工厂子类来完成，这样就解藕了上面提到的不同初始化具体类时的逻辑太过于纠缠到一个方法内可维护性不高的问题</li>
-<li>举例：假设我们要可以选择初始化的选择是一些key-val数据库（redis、leveldb、rocksdb…）,然后通过传入的参数进行返回对应的连接。<br><img src="/images/factory_method.png" alt="factory_methos"></li>
-<li>优点<ul>
-<li>保持了NosqlClientFactoryMap.get_conn方法中的简洁，其只做具体NosqlClientFactory实现类的定位以及参数透传，具体各个实现类要用哪些参数进行初始化链接便自己内部进行相关逻辑处理</li>
-<li>我这里特意为Nosql的添加了create_conn方法，是对于每种Nosql DB我们都明确的知道需要哪些参数来创建、故放到自己的类下面进行维护是更为清晰合理的，而此时对应的子类XxxFactory就只需要构造出这样的参数并调用之就可以了，这样的好处就是假设别的地方又需要创建Nosql客户端时（假设要创建Redis客户端），就可以自己依据自己这边的输入进行构造Redis.create_conn需要的参数进行调用。这样就分离了变化(创建核心参数 与 变化的不同地方不同输入参数的有效化处理过程)</li>
-</ul>
-</li>
-<li>缺点<ul>
-<li>需要创建的子factory类太多</li>
-</ul>
-</li>
-</ul>
-<h4 id="抽象工厂"><a href="#抽象工厂" class="headerlink" title="抽象工厂"></a>抽象工厂</h4><ul>
-<li>核心要点：主要用于解决“隔离域”问题，在工厂方法中，用户调用外层工厂NosqlClientFactoryMap是有权限创建任意一种具体Nosql产品的，并没有从NosqlClientFactoryMap级别进行隔离，而抽象工厂要做的就是从最外界进行隔离，让不同“环境”的用户调用的最外层工厂类只能创建到其特定被赋予的组件</li>
-<li>举例2：假设有一个产品，其分内网使用与外网使用、而其使用到的组件有关系型数据库以及消息队列组件，假设其内网使用的全部是自研的产品如关系型数据库A与消息队列组件A，而外网使用的则是通用的mysql和ActiveMQ，那么就会出现实例化时需要实例化不同的族的问题。从图中可以看到，内网用户只能调用InnerFactory，而后其如果想获取RDB则在调用对应的createRDB获取，同理当需要使用时候调用createMQ，这样就从最外层的创建者做了隔离</li>
-<li>其UML如下<br><img src="/images/abstract_factory.png" alt="abstract_factory"></li>
-<li>补充：“隔离域”不要只想到环境问题，还有比如类似假设一个系统的用户相关使用的是一组资源类型、而交易相关的使用的是另一租资源类型</li>
-<li>补充：一个思考是其实还可以将工厂方法也揉入进来，这里假设内网用户可创建的RDB也有多种选择，这样在InnerFactory这个层级下又可以添加子类工厂进行将实例化推迟到子类工厂</li>
-</ul>
-<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><blockquote>
-<p>《冒号课堂》第13章第1节<br><a href="https://design-patterns.readthedocs.io/zh_CN/latest/creational_patterns/creational.html" target="_blank" rel="noopener">创建型模式</a></p>
-</blockquote>
-
+          <h3 id="文章结构说明"><a href="#文章结构说明" class="headerlink" title="文章结构说明"></a>文章结构说明</h3><p>下面将从简单到复杂的说明，实例化类有哪些方式、会说明每种方式的优势和弊端是什么</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/08/18/%E5%88%9B%E5%BB%BA%E7%B1%BB%E5%AE%9E%E4%BE%8B/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -780,10 +500,16 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2020-07-07 22:41:36 / 修改时间：23:34:20" itemprop="dateCreated datePublished" datetime="2020-07-07T22:41:36+08:00">2020-07-07</time>
+              <time title="创建时间：2020-07-07 22:41:36" itemprop="dateCreated datePublished" datetime="2020-07-07T22:41:36+08:00">2020-07-07</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-08-30 21:21:51" itemprop="dateModified" datetime="2020-08-30T21:21:51+08:00">2020-08-30</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-folder-o"></i>
@@ -808,47 +534,14 @@
 
       
           <h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>redis常被用作限流处理，这里主要谈一个之前遇到的遇到过的问题及其解决（顺便会提供一个批量化的版本）</p>
-<h3 id="问题版本"><a href="#问题版本" class="headerlink" title="问题版本"></a>问题版本</h3><ul>
-<li><p>假设检查的是一个key，要求是在规定时间x内的访问不超过y次（x&gt;0, y&gt;0）：</p>
-<ol>
-<li>GET key  若为空表示规定时间内0次访问，此次通过，并且执行 SET key 1 EX x后就可以返回0了，客户端再进行比较x与0</li>
-<li>若不为空，调用INCR key（<strong>此处的一个要点是INCR并不会去除掉key的expire信息</strong>），返回GET key或者INCR执行的返回减1即可</li>
-</ol>
-</li>
-<li><p>下面是不那么伪的伪代码</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">freq_controled</span><span class="params">(key: str, time_gap: int, limit: int)</span>:</span></span><br><span class="line">    visit_amount = redis_client.get(key)  <span class="comment"># 假设key存在时返回的是int类型吧</span></span><br><span class="line">    <span class="keyword">if</span> visit_amount <span class="keyword">is</span> <span class="literal">None</span>:  <span class="comment"># 没有此key</span></span><br><span class="line">        redis_client.set(key, <span class="number">1</span>, EX, limit)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line">    redis_client.incr(key, <span class="number">1</span>)</span><br><span class="line">    <span class="keyword">return</span> visit_amount &gt; limit</span><br></pre></td></tr></table></figure>
-</li>
-<li><p><strong>问题解释</strong></p>
-<ul>
-<li>核心bug出现在redis_client.get(key)的时候key存在，但是当运行redis server执行redis_client.incr(key, 1)的时候，key过期从而变得不存在了，此时再执行redis_client.incr(key, 1)就会生成一个没有expire信息、永不过期的key</li>
-</ul>
-</li>
-</ul>
-<h3 id="问题解决"><a href="#问题解决" class="headerlink" title="问题解决"></a>问题解决</h3><ul>
-<li><p>通过检测redis_client.incr(key, 1)的返回值、如果是1则表示触发了bug情景（因为正常情况下此返回应大于等于2才对），此时需要再执行一次redis_client.set(key, 2, EX, limit)   # 保险起见设为2吧（万一触发这个set为1的是另一个client呢）</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">freq_controled</span><span class="params">(key: str, time_gap: int, limit: int)</span>:</span></span><br><span class="line">    visit_amount = redis_client.get(key)  <span class="comment"># 假设返回的是int类型吧</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> resp_int:</span><br><span class="line">        redis_client.set(key, <span class="number">1</span>, EX, limit)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line">    incr_resp = redis_client.incr(key, <span class="number">1</span>)  <span class="comment"># 还是假设返回的是int类型吧</span></span><br><span class="line">    <span class="keyword">if</span> incr_resp == <span class="number">1</span>:</span><br><span class="line">        redis_client.set(key, <span class="number">2</span>, EX, limit)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line">    <span class="keyword">return</span> visit_amount &gt; limit</span><br></pre></td></tr></table></figure>
-
-
-
-</li>
-</ul>
-<h3 id="优化"><a href="#优化" class="headerlink" title="优化"></a>优化</h3><ul>
-<li><p>上面的问题在于最坏IO次数太多了，最坏情况下需要3次IO，同理优化还是找老朋友Lua脚本进行（这样无论好坏都1次IO搞定）</p>
-<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> get_result = redis.call(<span class="string">"GET"</span>, KEYS[<span class="number">1</span>])</span><br><span class="line"><span class="keyword">if</span> <span class="keyword">not</span> get_result <span class="keyword">then</span></span><br><span class="line">    redis.call(<span class="string">"SET"</span>, KEYS[<span class="number">1</span>], <span class="number">1</span>, <span class="string">"EX"</span>, ARGV[<span class="number">1</span>])</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    <span class="keyword">local</span> incr_result = redis.call(<span class="string">"INCR"</span>, KEYS[<span class="number">1</span>])</span><br><span class="line">    <span class="keyword">if</span> incr_result == <span class="number">1</span> <span class="keyword">then</span></span><br><span class="line">        redis.call(<span class="string">"SET"</span>, KEYS[<span class="number">1</span>], <span class="number">2</span>, <span class="string">"EX"</span>, ARGV[<span class="number">1</span>])</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">return</span> incr_result - <span class="number">1</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
-
-
-
-</li>
-</ul>
-<h3 id="批处理"><a href="#批处理" class="headerlink" title="批处理"></a>批处理</h3><ul>
-<li><p>上面的问题在于每次只能提供一个key，那有场景情况下一下就拿到了n个key需要验证，IO次数就是n次了，也不划算，下面提供一个多key作为输入的版本</p>
-<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> <span class="function"><span class="keyword">function</span> <span class="title">handle_result</span><span class="params">(key, expire)</span></span></span><br><span class="line">    <span class="keyword">local</span> redis_resp = redis.call(<span class="string">"GET"</span>, key)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> redis_resp <span class="keyword">then</span></span><br><span class="line">        redis.call(<span class="string">"SET"</span>, key, <span class="number">1</span>, <span class="string">"EX"</span>, expire)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">local</span> incr_result = redis.call(<span class="string">"INCR"</span>, key)</span><br><span class="line">        <span class="keyword">if</span> incr_result == <span class="number">1</span> <span class="keyword">then</span></span><br><span class="line">            redis.call(<span class="string">"SET"</span>, key, <span class="number">2</span>, <span class="string">"EX"</span>, <span class="built_in">tonumber</span>(expire))</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            <span class="keyword">return</span> incr_result - <span class="number">1</span></span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"><span class="keyword">local</span> final_result = &#123;&#125;</span><br><span class="line"><span class="keyword">for</span> key_index, key <span class="keyword">in</span> <span class="built_in">ipairs</span>(KEYS) <span class="keyword">do</span></span><br><span class="line">    <span class="keyword">local</span> func_ret = handle_result(key, ARGV[key_index])</span><br><span class="line">    <span class="built_in">table</span>.<span class="built_in">insert</span>(final_result, func_ret)</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"><span class="keyword">return</span> final_result</span><br></pre></td></tr></table></figure>
-
-
-
-</li>
-</ul>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/07/07/%E8%AE%B0%E5%9F%BA%E4%BA%8Eredis%E5%81%9A%E9%A2%91%E6%AC%A1%E9%99%90%E5%88%B6%E9%81%87%E5%88%B0%E7%9A%84bug/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -890,10 +583,16 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2020-06-22 23:10:01 / 修改时间：23:58:44" itemprop="dateCreated datePublished" datetime="2020-06-22T23:10:01+08:00">2020-06-22</time>
+              <time title="创建时间：2020-06-22 23:10:01" itemprop="dateCreated datePublished" datetime="2020-06-22T23:10:01+08:00">2020-06-22</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-08-30 21:27:18" itemprop="dateModified" datetime="2020-08-30T21:27:18+08:00">2020-08-30</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-folder-o"></i>
@@ -917,26 +616,17 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h3 id="要点"><a href="#要点" class="headerlink" title="要点"></a>要点</h3><p>缓存是我们再熟悉不过的事情了。以如下我遇到的一种情况为例：数据库存储的基本是一些配置，要求要多个表进行全表缓存（因为行数不多，基本几百行。行数若太多请辩证的看待下面的想法），修改频率也不频繁，但是修改后有些表的缓存需要能够立即更新，有些则对实时性要求没有那么高。下面是整理的一些需求要点：</p>
-<ol>
-<li>能够提供最大刷新时间，对于一些修改后也不需要及时生效的可以通过最大刷新时间进行刷新</li>
-<li>正确且灵活的处理缓存击穿的问题（比如在一定时间内，同一个key击穿的只确认一次是否更新）</li>
-<li>有机制能及时的主动更新某表缓存</li>
-<li>若backend数据库故障后全部以缓存的为准（到达最大刷新时间也不更新）【辩证的看待此条，只是在我的场景里适用】</li>
-<li>一个进程、同一个表只持有一份缓存【进程单例】（这个有点和缓存无关，只是顺便说一下我下面的实现是绑定到app这个各个流程都能访问到的变量的原因）</li>
-</ol>
-<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>下面以我实际在一个aiohttp server项目中用的缓存管理数据结构为例：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CacheGroup</span>:</span></span><br><span class="line">    <span class="string">"""</span></span><br><span class="line"><span class="string">    处理依赖数据库的缓存更新问题，name使用表名字，如果修改了对应表，调用这里的refresh，注册进来的此表相关的缓存就都会刷新</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        self._name_map_cache = defaultdict(<span class="keyword">lambda</span>: [])</span><br><span class="line"></span><br><span class="line">    <span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">add</span><span class="params">(self, name, **kwargs)</span>:</span></span><br><span class="line">        cache = Cache(**kwargs)</span><br><span class="line">        <span class="keyword">await</span> cache.prepare()</span><br><span class="line">        self._name_map_cache[name].append(cache)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">refresh</span><span class="params">(self, name)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> name <span class="keyword">not</span> <span class="keyword">in</span> self._name_map_cache: <span class="keyword">return</span></span><br><span class="line">        caches = self._name_map_cache[name]</span><br><span class="line">        <span class="keyword">for</span> cache <span class="keyword">in</span> caches:</span><br><span class="line">            <span class="keyword">await</span> cache.refresh()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Cache</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, gen_func, app_key: str, app: web.Application,</span></span></span><br><span class="line"><span class="function"><span class="params">                 refresh_min_seconds: int = <span class="number">60</span>*<span class="number">30</span>, refresh_max_seconds: Optional[int] = None,</span></span></span><br><span class="line"><span class="function"><span class="params">                 *args, **kwargs)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        通过 实例.get(key) 方法获取缓存值</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">        :param gen_func: 生产缓存数据的函数，返回值作为value赋值给app的对应app_key属性, 正因为传入了这个，在需要刷新时再调用下即可了</span></span><br><span class="line"><span class="string">        :param app_key:</span></span><br><span class="line"><span class="string">        :param app: aiohttp的app实例</span></span><br><span class="line"><span class="string">        :param refresh_min_seconds: 击穿缓存的refresh_min_seconds时间内，认为缓存是绝对有效的，不更新缓存。若为0，则每次击穿都新查</span></span><br><span class="line"><span class="string">        :param refresh_max_seconds: 在此时间后，进行一次更新，若为None，表示不更新</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        <span class="keyword">if</span> isinstance(refresh_min_seconds, int) <span class="keyword">and</span> isinstance(refresh_max_seconds, int):</span><br><span class="line">            <span class="keyword">if</span> refresh_max_seconds &lt; refresh_min_seconds:</span><br><span class="line">                <span class="keyword">raise</span> Exception(<span class="string">f'refresh_max_seconds <span class="subst">&#123;refresh_max_seconds&#125;</span> should not &lt; refresh_min_seconds <span class="subst">&#123;refresh_min_seconds&#125;</span>'</span>)</span><br><span class="line"></span><br><span class="line">        self.__class__.app = app</span><br><span class="line">        self.key = app_key</span><br><span class="line">        self._gen_func = gen_func</span><br><span class="line">        self.refresh_max_seconds = refresh_max_seconds</span><br><span class="line">        self.refresh_min_seconds = refresh_min_seconds</span><br><span class="line"></span><br><span class="line">        self.args = args</span><br><span class="line">        self.kwargs = kwargs</span><br><span class="line"></span><br><span class="line">        self._last_refresh = TimeUtil.now()</span><br><span class="line"></span><br><span class="line"><span class="meta">    @property</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">alive_seconds</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> (TimeUtil.now() - self._last_refresh).seconds</span><br><span class="line"></span><br><span class="line"><span class="meta">    @property</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">data</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> self._result</span><br><span class="line"></span><br><span class="line">    <span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">get</span><span class="params">(self, key, default=None)</span>:</span></span><br><span class="line">        <span class="comment"># 最大过期时间刷新</span></span><br><span class="line">        <span class="keyword">if</span> (</span><br><span class="line">                isinstance(self.refresh_max_seconds, int) <span class="keyword">and</span> self.refresh_max_seconds &gt; <span class="number">0</span> <span class="keyword">and</span></span><br><span class="line">                self.alive_seconds &gt; self.refresh_max_seconds</span><br><span class="line">        ):</span><br><span class="line">            <span class="keyword">await</span> self.refresh()</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 缓存击中</span></span><br><span class="line">        <span class="keyword">if</span> self._result.get(key):</span><br><span class="line">            <span class="keyword">return</span> self._result[key]</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 在有效时间内</span></span><br><span class="line">        <span class="keyword">if</span> self.refresh_min_seconds &gt; <span class="number">0</span> <span class="keyword">and</span> self.alive_seconds &lt; self.refresh_min_seconds:</span><br><span class="line">            <span class="keyword">return</span> default</span><br><span class="line"></span><br><span class="line">        <span class="keyword">await</span> self.refresh()</span><br><span class="line">        <span class="keyword">return</span> self._result.get(key, default)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__getattr__</span><span class="params">(self, item)</span>:</span></span><br><span class="line">        warnings.warn(<span class="string">'if u want to visit cache, use "await ins.get(key)"'</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__len__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> len(self._result)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__contains__</span><span class="params">(self, item)</span>:</span></span><br><span class="line">        <span class="comment"># 注意这里，时间还是调用了get，从而触发了最大过期时间...的检测</span></span><br><span class="line">        asyncio.ensure_future(self.get(item))</span><br><span class="line">        <span class="keyword">return</span> (item <span class="keyword">in</span> self.data)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">_get_result</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            resp = <span class="keyword">await</span> self._gen_func(self.app, *self.args, **self.kwargs)</span><br><span class="line">        <span class="keyword">except</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line">        <span class="keyword">return</span> resp</span><br><span class="line"></span><br><span class="line">    <span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">refresh</span><span class="params">(self)</span>:</span></span><br><span class="line">        self._last_refresh = TimeUtil.now()</span><br><span class="line">        result = <span class="keyword">await</span> self._get_result()</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> result: <span class="keyword">return</span>  <span class="comment"># 防御。避免组件出错时，无法获取数据，导致一直刷新数据引崩。此时使用老的缓存数据</span></span><br><span class="line">        self._result = result</span><br><span class="line"></span><br><span class="line">    <span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">prepare</span><span class="params">(self)</span>:</span></span><br><span class="line">        result = <span class="keyword">await</span> self._get_result()</span><br><span class="line">        <span class="keyword">assert</span> result, <span class="string">f'<span class="subst">&#123;self.key&#125;</span>, prepare cache failed'</span></span><br><span class="line">        <span class="keyword">assert</span> isinstance(result, dict), <span class="string">f'<span class="subst">&#123;self.key&#125;</span>, value must be dict like object (Key-Value)'</span></span><br><span class="line"></span><br><span class="line">        self._result = result</span><br><span class="line">        self.app[self.key] = self</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> <span class="string">f'cache obj to app key <span class="subst">&#123;self.key&#125;</span>, alive <span class="subst">&#123;TimeUtil.beautyDuration(self.alive_seconds)[<span class="number">0</span>]&#125;</span> '</span></span><br></pre></td></tr></table></figure>
-
-<p>可以看到的是，上面的结构已经实现了<strong>要点</strong>里面的1、2、4、5四个点了，那么第3点该如何实现呢？</p>
-<ol>
-<li><p>首先我们明确的知道，可以通过await app[‘cache_group’].refresh(‘xxx_key’)来刷新xxx_key代表的某表</p>
-</li>
-<li><p>其次问题就是如果让在多台机器的各个进程都能够能够及时的知道xxx_key代表的数据库表发生了修改</p>
-<p>这里我同样还是使用了基于redis pub/sub的方式进行，因为首先合适的修改方式肯定不是手动去直接改数据库（风险太高），那么别的方式肯定是很容易同时触发一个pub xxx_key到相应channel的，这样每个进程收到后再调用await app[‘cache_group’].refresh(‘xxx_key’)即可完成“及时”的刷新</p>
-</li>
-</ol>
-
+          <blockquote>
+<p>讲述了我在实际工程中对于缓存管理的认识</p>
+</blockquote>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/06/22/%E4%B8%80%E4%B8%AA%E5%90%88%E6%A0%BC%E7%9A%84%E7%BC%93%E5%AD%98%E7%AE%A1%E7%90%86/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -986,7 +676,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-07-27 23:24:55" itemprop="dateModified" datetime="2020-07-27T23:24:55+08:00">2020-07-27</time>
+                <time title="修改时间：2020-08-30 21:25:46" itemprop="dateModified" datetime="2020-08-30T21:25:46+08:00">2020-08-30</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1011,40 +701,17 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <ul>
-<li><p>已完成</p>
-<ul>
-<li><a href="https://book.douban.com/subject/5333562/" target="_blank" rel="noopener">深入理解计算机系统</a><ul>
-<li>时间：2020-02 ～ 2020-06</li>
-<li>推荐系数：五星</li>
-<li>难易度：高</li>
-<li>一句话总结：完整的了解程序执行周期涉及到的软/硬件构成及其为了提高效率引入的各类机制,同时指导了代码层面如何优化以获取更高性能</li>
-<li>准备整理中</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>进行中</p>
-<ul>
-<li><a href="https://book.douban.com/subject/4031906/" target="_blank" rel="noopener">冒号课堂</a><ul>
-<li>时间：2020-05 ～ </li>
-<li>推荐系数：五星</li>
-<li>难易度：较高</li>
-</ul>
-</li>
-<li><a href="https://book.douban.com/subject/26337545/" target="_blank" rel="noopener">The Go Programming Language</a><ul>
-<li>时间：2020-07 ～ </li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>准备读</p>
-<ul>
-<li><a href="https://book.douban.com/subject/30280001/" target="_blank" rel="noopener">计算机网络 自顶向下方法</a></li>
-</ul>
-</li>
-</ul>
-
+          <blockquote>
+<p>记录读书计划</p>
+</blockquote>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/06/21/%E8%AF%BB%E4%B9%A6%E8%AE%B0%E5%BD%95%E4%B8%8E%E8%A7%84%E5%88%92/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -1094,7 +761,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-08-29 17:27:03" itemprop="dateModified" datetime="2020-08-29T17:27:03+08:00">2020-08-29</time>
+                <time title="修改时间：2020-08-30 21:25:09" itemprop="dateModified" datetime="2020-08-30T21:25:09+08:00">2020-08-30</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1122,19 +789,14 @@
           <blockquote>
 <p>由于调用很多情况下都存在子调用、而子调用链上很可能某一环就抛出了异常，此文主要讲我是怎么看待和处理这种情况的</p>
 </blockquote>
-<h3 id="不好的做法"><a href="#不好的做法" class="headerlink" title="不好的做法"></a>不好的做法</h3><h4 id="什么都不做"><a href="#什么都不做" class="headerlink" title="什么都不做"></a>什么都不做</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">def c():</span><br><span class="line">    raise Exception(&#39;xxx&#39;)</span><br><span class="line"></span><br><span class="line">def b():</span><br><span class="line">    # dong pre things</span><br><span class="line">    c()</span><br><span class="line">    # dong after things</span><br><span class="line"></span><br><span class="line">def a():</span><br><span class="line">    b()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:</span><br><span class="line">    a()</span><br><span class="line"></span><br><span class="line">&quot;&quot;&quot;</span><br><span class="line">输出：</span><br><span class="line">Traceback (most recent call last):</span><br><span class="line">  File &quot;&#x2F;...&#x2F;tmp.py&quot;, line 14, in &lt;module&gt;</span><br><span class="line">    a()</span><br><span class="line">  File &quot;&#x2F;...&#x2F;tmp.py&quot;, line 10, in a</span><br><span class="line">    b()</span><br><span class="line">  File &quot;&#x2F;...&#x2F;tmp.py&quot;, line 6, in b</span><br><span class="line">    c()</span><br><span class="line">  File &quot;&#x2F;...&#x2F;tmp.py&quot;, line 2, in c</span><br><span class="line">    raise Exception(&#39;xxx&#39;)</span><br><span class="line">Exception: xxx</span><br><span class="line">&quot;&quot;&quot;</span><br></pre></td></tr></table></figure>
-<pre><code>1. 这样导致程序直接退出了、而得到的报错信息是程序报错的信息，这样是不能够提供给用户（非开发人员）的
-2. 有可能在b环节里、调用c压根不是个重要的事情（假设是打日志到某日志收集平台）、那么由于c发生的异常导致整体让用户认为操作失败了是完全没有必要的
-3. c真的应该raise Exception吗？这会导致所有其调用者都需要使用try ... catch ...来捕捉错误信息</code></pre><h4 id="所有子调用都统一返回result、error格式"><a href="#所有子调用都统一返回result、error格式" class="headerlink" title="所有子调用都统一返回result、error格式"></a>所有子调用都统一返回result、error格式</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">def c():</span><br><span class="line">    return None, Exception(&#39;xxx&#39;)</span><br><span class="line"></span><br><span class="line">def b():</span><br><span class="line">    # dong pre things</span><br><span class="line">    c_res, err &#x3D; c()</span><br><span class="line">    # 若我（b）认为是关键步骤、就直接返回 None，&#39;从b的角度转化为可读性更高的报错信息&#39;</span><br><span class="line">    # 否则继续往下走</span><br><span class="line">    # dong after things</span><br><span class="line"></span><br><span class="line">    return &#39;sth&#39;, None</span><br><span class="line"></span><br><span class="line">def a():</span><br><span class="line">    b_resp, err &#x3D; b()</span><br><span class="line"></span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:</span><br><span class="line">    a()</span><br></pre></td></tr></table></figure>
-<pre><code>1. 优点：b能够处理上面提到的没必要因为不重要事情而退出的情况
-2. 优点：a拿到b的可读性更好的报错信息，其可以根据自己对于b业务的重要性等判断来决定是否处理以及返回的错误信息（从a的角度理解是a最接近用户、最接近具体业务、其能返回可读性更高的信息、以及更能决定哪些步骤才是核心步骤; 从b的角度理解就是b只提供特定功能，此功能在调用b的不同调用者中的重要程度不同，对于b处理结果的看待方式应由调用者决定）
-2. 缺点：从a的角度拿到的信息少了底层（c）的真实程序报错信息，不方便开发者来后续分析与处理</code></pre><h3 id="我希望做到的是若某次的调用链其中某一-几环出现了异常"><a href="#我希望做到的是若某次的调用链其中某一-几环出现了异常" class="headerlink" title="我希望做到的是若某次的调用链其中某一/几环出现了异常"></a>我希望做到的是若某次的调用链其中某一/几环出现了异常</h3><ol>
-<li><strong>尽量</strong>不raise Exception从而避免自己其实是个不重要的功能却导致整体的调用失败</li>
-<li>最后能返回给用户可读性非常高的异常信息</li>
-<li>能够提供给开发者掌握到各个调用的异常详情信息以方便排查/修复</li>
-</ol>
-<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">"""</span></span><br><span class="line"><span class="string">现在我的项目是将Ret实现到一个每个文件都应该导入的一个包里，并确保所有的返回都是Ret实例</span></span><br><span class="line"><span class="string">这里为了方便写到一起</span></span><br><span class="line"><span class="string">对比之前我习惯以result, error的返回方式，我觉得这种方式的优点会多不少（对于"核心思想"）</span></span><br><span class="line"><span class="string">"""</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Ret</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, result=None, error=[])</span>:</span></span><br><span class="line">        self.result = result</span><br><span class="line">        self._err = [] <span class="keyword">if</span> <span class="keyword">not</span> error <span class="keyword">else</span> [error]  <span class="comment"># always keep error as a list</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__setattr__</span><span class="params">(self, key, value)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> key == <span class="string">'error'</span>:</span><br><span class="line">            self._err.append(value)</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        <span class="keyword">return</span> super().__setattr__(key, value)</span><br><span class="line"></span><br><span class="line"><span class="meta">    @property</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">error</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> self.result <span class="keyword">or</span> <span class="keyword">not</span> self._err:</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line">        <span class="keyword">return</span> self._err.__str__()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_error</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        self._err.append(value)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__bool__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> len(self._err) == <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> self:</span><br><span class="line">            <span class="keyword">return</span> <span class="string">f'SUC with result: <span class="subst">&#123;self.result&#125;</span>'</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="string">f'FAIL with error: <span class="subst">&#123;self.error&#125;</span>'</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">c</span><span class="params">()</span>:</span></span><br><span class="line">    ret = Ret()</span><br><span class="line">    <span class="comment"># 模拟处理有问题</span></span><br><span class="line"></span><br><span class="line">    ret.error = <span class="string">'c failed'</span></span><br><span class="line">    <span class="keyword">return</span> ret</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">b</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="comment"># ...</span></span><br><span class="line"></span><br><span class="line">    ret = c()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ret.error:</span><br><span class="line">        <span class="comment"># 此处b更有决定权是否/如何处理c返回出错的情况</span></span><br><span class="line">        <span class="comment"># 如果error是有效且不能继续下面的操作时，return ret即可</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 这里假设b的处理也出错了</span></span><br><span class="line">    <span class="comment"># 只需要继续对ret.error进行赋值即可会自动加到error_list中，使用负担小，直接</span></span><br><span class="line">    ret.error = <span class="string">'b failed'</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> ret</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">a</span><span class="params">()</span>:</span></span><br><span class="line">    ret = b()</span><br><span class="line">    print(ret)</span><br><span class="line">    print(ret.error)</span><br><span class="line">    <span class="comment"># 此处最高层应该更贴近业务，更能够决定如何处理此error</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    a()</span><br><span class="line"></span><br><span class="line"><span class="string">"""</span></span><br><span class="line"><span class="string">输出：</span></span><br><span class="line"><span class="string">FAIL with error: ['c failed', 'b failed']</span></span><br><span class="line"><span class="string">['c failed', 'b failed']</span></span><br><span class="line"><span class="string">"""</span></span><br></pre></td></tr></table></figure>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/06/21/%E8%B0%88%E8%B0%88%E8%B0%83%E7%94%A8%E8%BF%94%E5%9B%9E/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -1176,10 +838,16 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2020-06-21 16:23:41 / 修改时间：17:25:08" itemprop="dateCreated datePublished" datetime="2020-06-21T16:23:41+08:00">2020-06-21</time>
+              <time title="创建时间：2020-06-21 16:23:41" itemprop="dateCreated datePublished" datetime="2020-06-21T16:23:41+08:00">2020-06-21</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-08-30 21:28:42" itemprop="dateModified" datetime="2020-08-30T21:28:42+08:00">2020-08-30</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-folder-o"></i>
@@ -1203,66 +871,17 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h3 id="核心要点"><a href="#核心要点" class="headerlink" title="核心要点"></a>核心要点</h3><p>相信我们有很多的consumer都涉及到的是从一个消息队列消费，处理后可能还涉及到往多个IO目标（如回调一个http地址，上传到elasticsearch…）进行写的情况。对这种I/O密集的情况，下面有一些我认为的需要注意点：</p>
-<ol>
-<li>所有IO操作要能够批量化</li>
-<li>需要能处理异常信号，处理完当前已取出的元素后才推出</li>
-<li>考虑到上下游挤压/性能问题，要能够自动/灵活的调整获取元素/调用下游时的并发量</li>
-<li>确保coroutine的划分能合理有效的在不同IO操作时能够切换出去</li>
-</ol>
-<h3 id="详细说明"><a href="#详细说明" class="headerlink" title="详细说明"></a>详细说明</h3><p>以我实际遇到的为例：consumer从放置短信状态报告的redis队列中取出状态报告（报告发出的每条短信的接收状态），处理后全部要上传到elasticsearch，同时若其中有上行短信（用户回复的短信）的记录要以http调用的方式另外发布给一个平台进行下一步的处理</p>
-<ol>
-<li><p>全部使用I/O操作批量</p>
-<ol>
-<li><p>redis获取的批量操作：这个可以通过下面的lua脚本做到，从而将每次获取的数量作为参数传入即可</p>
-<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> key = KEYS[<span class="number">1</span>]</span><br><span class="line"><span class="keyword">local</span> n = ARGV[<span class="number">1</span>]</span><br><span class="line"><span class="keyword">local</span> <span class="built_in">rep</span> = &#123;&#125;</span><br><span class="line"><span class="keyword">local</span> ele = <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> <span class="built_in">tonumber</span>(n) &gt; <span class="number">0</span> <span class="keyword">and</span> ele <span class="keyword">do</span></span><br><span class="line">  ele = redis.call(<span class="string">'RPOP'</span>, key)</span><br><span class="line">  n = n - <span class="number">1</span></span><br><span class="line">  <span class="keyword">if</span> ele <span class="keyword">then</span></span><br><span class="line">    <span class="built_in">rep</span>[#<span class="built_in">rep</span>+<span class="number">1</span>] = ele</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> <span class="built_in">rep</span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>批量上传到es：这个es是支持bulk操作的</p>
-</li>
-<li><p>批量发布到另一个平台：请在接入时和对方提要求必须要能够批量传入</p>
-</li>
-</ol>
-</li>
-<li><p>需要能够处理异常信息</p>
-<ol>
-<li><p>说明</p>
-<p>对于consumer而言，相比真正的一些不可预料的异常（反正SIGKILL - 9和SIGSTOP - 19也扑捉不到）。我们实际更常遇到的是重启consumer（比如更新了代码），故我们需要能够正确的处理此类信号（如最常见的SIGTERM - 15），做到完全部已取出元素后再重启。</p>
-</li>
-<li><p>解决</p>
-<p>以一个全局变量为标示，再main函数中每次要进行下一轮获取前检测全局变量，如果符合退出要求就关闭需要关闭的后退出。而设置此全局变量的方式就是通过python的signal包在初始化时注册信号处理函数，如此后若发现有等待处理信号便会进入注册的信号处理函数</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> signal</span><br><span class="line"></span><br><span class="line">SIGNAL_TERMINATE = <span class="number">0</span>  <span class="comment"># 若被设置为1表示收到了系统关闭的信号量</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">exit_signal_controller</span><span class="params">(signum, stack)</span>:</span></span><br><span class="line">    <span class="keyword">global</span> SIGNAL_TERMINATE</span><br><span class="line">    <span class="keyword">if</span> signum == <span class="number">15</span>:  <span class="comment"># supervisor default stop/restart command signum</span></span><br><span class="line">        SIGNAL_TERMINATE = <span class="number">1</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="comment"># 注册信号处理函数</span></span><br><span class="line">    signal.signal(signal.SIGTERM, exit_signal_controller)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        <span class="comment"># 获取元素</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 处理</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> SIGNAL_TERMINATE:</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 关闭需要关闭的资源</span></span><br></pre></td></tr></table></figure>
-</li>
-</ol>
-</li>
-<li><p>自动/灵活的调整获取元素并发量</p>
-<ol>
-<li>说明<ul>
-<li>若上游出现大批量挤压，要能够自动的加大并发量进行消费</li>
-<li>而若假设这边的处理是要调用一个提供服务的下游，而下游不可避免的在某些时候会出现状况或者是调大并发量后发现扛不住，此时要能自动进行降低并发量</li>
-</ul>
-</li>
-<li>解决<ul>
-<li>在第1.1.1里面看到了，每次从redis获取元素的数量是个变量（假设为EACH_FETCH_AMOUNT）。但是我这里还要引入另一个变量，用于控制并发量（假设为HANDLE_AMOUNT_THRESOLD）。核心思想是获取到的总数量&gt;=HANDLE_AMOUNT_THRESOLD后才进行处理，故实际HANDLE_AMOUNT_THRESOLD就是并发量最大值。（补充：此处实际还需要做在数量不够HANDLE_AMOUNT_THRESOLD单超过了一定时间后也进行处理的逻辑，避免延迟不可接受。）</li>
-<li>这里我的解决办法其实和上面处理异常信号的思想很像，注册信号处理函数变成了subscribe一个redis channel，这样自动检测程序（检测上游是否有积压以及下游是否扛不住）在检测到问题后就publish具体希望调节到的并发量数值到程序完成自动调节。自由度很大</li>
-</ul>
-</li>
-</ol>
-</li>
-<li><p>确保coroutine的划分能合理有效的在不同IO操作时能够切换出去</p>
-<ol>
-<li><p>说明：这只是一个提醒，划分coroutine注意要按是否有I/O操作来划分，以及注意可以使用一些技巧更好的编排coroutine的切换（如这里使用的event），避免空切太多</p>
-</li>
-<li><p>示例：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">push_momsg_to_xxx</span><span class="params">(session, event, mos_list)</span>:</span></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        <span class="keyword">await</span> event.wait()</span><br><span class="line"></span><br><span class="line">        items = mos_list[:]</span><br><span class="line">        mos_list[:] = []</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 使用session将items通过http调用报告过去</span></span><br><span class="line"></span><br><span class="line">        event.clear()</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">push_to_es</span><span class="params">(session, event, redis, items_list)</span>:</span></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        <span class="keyword">await</span> event.wait()</span><br><span class="line"></span><br><span class="line">        items = items_list[:]</span><br><span class="line">        items_list[:] = []</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 使用session将items上传到elasticsearch</span></span><br><span class="line"></span><br><span class="line">        event.clear()</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">consumer</span><span class="params">(redis, report_event, items_list, mo_event, mo_list)</span>:</span></span><br><span class="line">    last_up_time = time.time()</span><br><span class="line">    amount = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    resp = <span class="keyword">await</span> redis.client.brpop(REDIS_LIST_NAME)</span><br><span class="line">    script_result = <span class="keyword">await</span> redis.client.evalsha(redis.sha_multipop, keys=[REDIS_LIST_NAME], args=[EACH_FETCH_AMOUNT])</span><br><span class="line">    script_result.append(resp[<span class="number">1</span>])</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> index, body <span class="keyword">in</span> enumerate(script_result):</span><br><span class="line">        ess, mos, error = handle_item(body)</span><br><span class="line">        amount += <span class="number">1</span></span><br><span class="line"></span><br><span class="line">        items_list.append(ess)</span><br><span class="line">        <span class="keyword">if</span> mos: mo_list.extend(mos)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> len(items_list) &gt;= UPLOAD_AMOUNT_THRESOLD <span class="keyword">or</span> (time.time() - last_up_time) &gt; UPLOAD_TIME_THRESOLD:</span><br><span class="line">        <span class="keyword">if</span> len(items_list) &gt; <span class="number">0</span>:</span><br><span class="line">            report_event.set()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> mo_list:</span><br><span class="line">        mo_event.set()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    report_event = asyncio.Event()</span><br><span class="line">    items_list = []</span><br><span class="line">    mo_event = asyncio.Event()</span><br><span class="line">    mo_list = []</span><br><span class="line"></span><br><span class="line">    redis = <span class="keyword">await</span> AsyncRedis().get_ins()</span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">with</span> aiohttp.ClientSession() <span class="keyword">as</span> session:</span><br><span class="line">        consumer_task = asyncio.create_task(consumer(redis, report_event, items_list, mo_event, mo_list))</span><br><span class="line">        pusher_task = asyncio.create_task(push_to_es(session, report_event, redis, items_list))</span><br><span class="line">        push_to_mo_task = asyncio.create_task(push_momsg_to_xxx(session, mo_event, mo_list))</span><br><span class="line"></span><br><span class="line">        <span class="keyword">await</span> asyncio.gather(*[consumer_task, pusher_task, push_to_mo_task])</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    REDIS_LIST_NAME = <span class="string">'xxx'</span></span><br><span class="line"></span><br><span class="line">    EACH_FETCH_AMOUNT = <span class="number">30</span></span><br><span class="line">    UPLOAD_AMOUNT_THRESOLD = <span class="number">60</span></span><br><span class="line">    UPLOAD_TIME_THRESOLD = <span class="number">5</span></span><br><span class="line"></span><br><span class="line">    asyncio.run(main())</span><br></pre></td></tr></table></figure>
-
-
-
-</li>
-</ol>
-</li>
-</ol>
-<h3 id="具体代码"><a href="#具体代码" class="headerlink" title="具体代码"></a>具体代码</h3><p>TODO</p>
-
+          <blockquote>
+<p>我在实际工程中的基于python协程consumer考虑到的优化点</p>
+</blockquote>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/06/21/%E4%B8%80%E4%B8%AA%E5%90%88%E6%A0%BC%E7%9A%84IO%E5%AF%86%E9%9B%86%E5%9E%8Basync-consumer/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -1304,10 +923,16 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2020-01-31 17:23:41 / 修改时间：18:08:57" itemprop="dateCreated datePublished" datetime="2020-01-31T17:23:41+08:00">2020-01-31</time>
+              <time title="创建时间：2020-01-31 17:23:41" itemprop="dateCreated datePublished" datetime="2020-01-31T17:23:41+08:00">2020-01-31</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-08-30 21:36:09" itemprop="dateModified" datetime="2020-08-30T21:36:09+08:00">2020-08-30</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-folder-o"></i>
@@ -1331,32 +956,17 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h3 id="背景说明"><a href="#背景说明" class="headerlink" title="背景说明"></a>背景说明</h3><ul>
-<li>web后端server场景：全局initial时访问了一次数据库user表、形成本地内存的name-map-passwd的dict/map。对于进来的每个请求，检测了必须的参数是否齐全、而后从name-map-passwd检测是否有权限。最后json序列化后lpush到redis(均没有限制redis pool的max size)。</li>
-<li>python3.7, aiohttp v3.5.4，nginx,  5worker uvloop gunicorn based on .sock file</li>
-<li>python3.7, django v3.0.2，nginx，uwsgi，5worker based on .sock file</li>
-<li>go1.13.6，Echo v4.0.0，nginx，5worker based on http port</li>
-<li>压测机器为8核16G内存，被压测机器4核16G内存</li>
-<li>压测工具使用同事开发的<a href="https://github.com/yunsonbai/ysab" target="_blank" rel="noopener">ysab</a><ul>
-<li>重要参数说明； -n：Number of multiple requests to make at a time； -r：round；</li>
-</ul>
-</li>
-</ul>
-<h3 id="结果展示"><a href="#结果展示" class="headerlink" title="结果展示"></a>结果展示</h3><h4 id="Echo-Go"><a href="#Echo-Go" class="headerlink" title="Echo(Go)"></a>Echo(Go)</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">$ ysab -n 900 -r 100 -u &#39;http:&#x2F;&#x2F;host:port&#x2F;sendMsgAll&#x2F;?userkey&#x3D;xxx&amp;type&#x3D;xxx&amp;content&#x3D;dfhajklshfjkld&amp;tolist&#x3D;156526xxxxx&amp;username&#x3D;pd&#39;</span><br><span class="line"></span><br><span class="line">Summary:</span><br><span class="line">  Complete requests:		90000</span><br><span class="line">  Failed requests:		0</span><br><span class="line">  Time taken (s):		10.66654527</span><br><span class="line">  Total data size (Byte):	10530000</span><br><span class="line">  Data size&#x2F;request (Byte):	117</span><br><span class="line">  Max use time (ms):		1276</span><br><span class="line">  Min use time (ms):		6</span><br><span class="line">  Average use time (ms):	103.338</span><br><span class="line">  Requests&#x2F;sec:			8437.596027753041</span><br><span class="line">  SuccessRequests&#x2F;sec:		8437.596027753041</span><br><span class="line"></span><br><span class="line">Percentage of waiting time (ms):</span><br><span class="line">    10.00%:		34</span><br><span class="line">    25.00%:		54</span><br><span class="line">    50.00%:		86</span><br><span class="line">    75.00%:		131</span><br><span class="line">    90.00%:		180</span><br><span class="line">    95.00%:		221</span><br><span class="line">    99.00%:		335</span><br><span class="line">    99.90%:		1098</span><br><span class="line">    99.99%:		1274</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Time detail (ms)</span><br><span class="line">  item		min		mean		max</span><br><span class="line">  dns		0		0		0</span><br><span class="line">  conn		0		0.154		40</span><br><span class="line">  wait		6		103.029		1276</span><br><span class="line">  resp		0		0.035		22</span><br><span class="line"></span><br><span class="line">Response Time histogram (code: requests):</span><br><span class="line">  200:		90000</span><br></pre></td></tr></table></figure>
-
-<h4 id="Aiohttp-Python"><a href="#Aiohttp-Python" class="headerlink" title="Aiohttp(Python)"></a>Aiohttp(Python)</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">$ ysab -n 900 -r 100 -u &#39;http:&#x2F;&#x2F;host:port&#x2F;sendMsgAll&#x2F;?userkey&#x3D;xxx&amp;type&#x3D;xxx&amp;content&#x3D;dfhajklshfjkld&amp;tolist&#x3D;156526xxxxx&amp;username&#x3D;pd&#39;</span><br><span class="line"></span><br><span class="line">Summary:</span><br><span class="line">  Complete requests:		90000</span><br><span class="line">  Failed requests:		1304</span><br><span class="line">  Time taken (s):		35.491095644</span><br><span class="line">  Total data size (Byte):	11401288</span><br><span class="line">  Data size&#x2F;request (Byte):	126</span><br><span class="line">  Max use time (ms):		1368</span><br><span class="line">  Min use time (ms):		1</span><br><span class="line">  Average use time (ms):	353.329</span><br><span class="line">  Requests&#x2F;sec:			2535.8473264043932</span><br><span class="line">  SuccessRequests&#x2F;sec:		2499.105716252934</span><br><span class="line"></span><br><span class="line">Percentage of waiting time (ms):</span><br><span class="line">    10.00%:		172</span><br><span class="line">    25.00%:		243</span><br><span class="line">    50.00%:		324</span><br><span class="line">    75.00%:		437</span><br><span class="line">    90.00%:		578</span><br><span class="line">    95.00%:		679</span><br><span class="line">    99.00%:		885</span><br><span class="line">    99.90%:		1117</span><br><span class="line">    99.99%:		1368</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Time detail (ms)</span><br><span class="line">  item		min		mean		max</span><br><span class="line">  dns		0		0		0</span><br><span class="line">  conn		0		0.182		58</span><br><span class="line">  wait		1		352.967		1368</span><br><span class="line">  resp		0		0.002		12</span><br><span class="line"></span><br><span class="line">Response Time histogram (code: requests):</span><br><span class="line">  200:		88696</span><br><span class="line">  502:		1304</span><br></pre></td></tr></table></figure>
-
-<h5 id="Django-Python"><a href="#Django-Python" class="headerlink" title="Django(Python)"></a>Django(Python)</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">$ ysab -n 900 -r 100 -u &#39;http:&#x2F;&#x2F;host:port&#x2F;sendMsgAll&#x2F;?userkey&#x3D;xxx&amp;type&#x3D;xxx&amp;content&#x3D;dfhajklshfjkld&amp;tolist&#x3D;156526xxxxx&amp;username&#x3D;pd&#39;</span><br><span class="line"></span><br><span class="line">Summary:</span><br><span class="line">	Complete requests:		90000</span><br><span class="line">  Failed requests:		86630</span><br><span class="line">  Time taken (s):		3.070857802</span><br><span class="line">  Total data size (Byte):	15411610</span><br><span class="line">  Data size&#x2F;request (Byte):	171</span><br><span class="line">  Max use time (ms):		327</span><br><span class="line">  Min use time (ms):		0</span><br><span class="line">  Average use time (ms):	17.152</span><br><span class="line">  Requests&#x2F;sec:			29307.771900536867</span><br><span class="line">  SuccessRequests&#x2F;sec:		1097.4132367201025</span><br><span class="line"></span><br><span class="line">Percentage of waiting time (ms):</span><br><span class="line">    10.00%:		1</span><br><span class="line">    25.00%:		2</span><br><span class="line">    50.00%:		14</span><br><span class="line">    75.00%:		20</span><br><span class="line">    90.00%:		31</span><br><span class="line">    95.00%:		45</span><br><span class="line">    99.00%:		126</span><br><span class="line">    99.90%:		279</span><br><span class="line">    99.99%:		322</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Time detail (ms)</span><br><span class="line">  item		min		mean		max</span><br><span class="line">  dns		0		0		0</span><br><span class="line">  conn		0		0.191		88</span><br><span class="line">  wait		0		7.667		160</span><br><span class="line">  resp		0		0.295		197</span><br><span class="line"></span><br><span class="line">Response Time histogram (code: requests):</span><br><span class="line">  200:		3370</span><br><span class="line">  502:		86630</span><br></pre></td></tr></table></figure>
-
-<p><font color="#dd0000">可见，同步django根本不能够承受到-n为900的情况，经过测试，其只能达到-n参数为100的程度，数据如下：</font></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">Summary:</span><br><span class="line">  Complete requests:		10000</span><br><span class="line">  Failed requests:		0</span><br><span class="line">  Time taken (s):		6.128261992</span><br><span class="line">  Total data size (Byte):	1260000</span><br><span class="line">  Data size&#x2F;request (Byte):	126</span><br><span class="line">  Max use time (ms):		91</span><br><span class="line">  Min use time (ms):		5</span><br><span class="line">  Average use time (ms):	60.374</span><br><span class="line">  Requests&#x2F;sec:			1631.7840218081851</span><br><span class="line">  SuccessRequests&#x2F;sec:		1631.7840218081851</span><br><span class="line"></span><br><span class="line">Percentage of waiting time (ms):</span><br><span class="line">    10.00%:		57</span><br><span class="line">    25.00%:		58</span><br><span class="line">    50.00%:		60</span><br><span class="line">    75.00%:		62</span><br><span class="line">    90.00%:		64</span><br><span class="line">    95.00%:		66</span><br><span class="line">    99.00%:		81</span><br><span class="line">    99.90%:		89</span><br><span class="line">    99.99%:		90</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Time detail (ms)</span><br><span class="line">  item		min		mean		max</span><br><span class="line">  dns		0		0		0</span><br><span class="line">  conn		0		0.009		6</span><br><span class="line">  wait		3		60.277		91</span><br><span class="line">  resp		0		0.003		10</span><br><span class="line"></span><br><span class="line">Response Time histogram (code: requests):</span><br><span class="line">  200:		10000</span><br></pre></td></tr></table></figure>
-
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><ul>
-<li>在稍微需要考虑并发的情况下，不要使用同步模式下的Django。</li>
-<li>aiohttp，由于已出现1.4%的fail，故认为其已达极限，结合我做的别的压测，其能承受qps应该在2.2k左右。</li>
-<li>Go，在qps达8.4k的情况下，未出现失败请求，且总体请求时间仅为aiohttp的28.6%，可见其真实性能应该高于此。</li>
-</ul>
-
+          <blockquote>
+<p>对于一个真实工程稍做简化后分别使用Python(django &amp; aiohttp) &amp; Go(Echo)实现了一版进行压测</p>
+</blockquote>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/01/31/Python-django-aiohttp-vs-Go-Echo-web-server%E5%8E%8B%E6%B5%8B%E6%80%A7%E8%83%BD%E5%AF%B9%E6%AF%94/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
