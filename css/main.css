@@ -294,7 +294,7 @@ td {
 }
 .btn {
   background: #fff;
-  border: 2px solid #555;
+  border: none;
   border-radius: 2px;
   color: #555;
   display: inline-block;
@@ -1153,7 +1153,7 @@ pre .javascript .function {
 }
 .links-of-author a::before,
 .links-of-author span.exturl::before {
-  background: #99fa6c;
+  background: #eeff74;
   border-radius: 50%;
   content: ' ';
   display: inline-block;
@@ -1520,7 +1520,7 @@ pre .javascript .function {
 }
 .post-button {
   margin-top: 40px;
-  text-align: center;
+  text-align: right;
 }
 .use-motion .post-block,
 .use-motion .pagination,
