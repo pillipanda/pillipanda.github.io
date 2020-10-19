@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="背景说明用了很久的时间，但是最近在看《Linux&#x2F;UNIX系统编程手册》-第10章（时间）以及通读了Go的time包的文档后发现对于常使用的时间可谓是知之甚少，不过目前自认感觉是认知比较清楚了，特此记录 名词解释 UTC&#x2F;GMT：通用协调时间&#x2F;格林威治标准时间（大概也是unix诞生的时间），即1970-01-01 00:00:00 DST：夏令时 - daylight time，即在高纬度地区，由">
+<meta property="og:type" content="article">
+<meta property="og:title" content="这次来搞懂计算机里面的时间">
+<meta property="og:url" content="http://yoursite.com/2020/10/19/%E8%BF%99%E6%AC%A1%E6%9D%A5%E6%90%9E%E6%87%82%E8%AE%A1%E7%AE%97%E6%9C%BA%E9%87%8C%E9%9D%A2%E7%9A%84%E6%97%B6%E9%97%B4/index.html">
+<meta property="og:site_name" content="pd">
+<meta property="og:description" content="背景说明用了很久的时间，但是最近在看《Linux&#x2F;UNIX系统编程手册》-第10章（时间）以及通读了Go的time包的文档后发现对于常使用的时间可谓是知之甚少，不过目前自认感觉是认知比较清楚了，特此记录 名词解释 UTC&#x2F;GMT：通用协调时间&#x2F;格林威治标准时间（大概也是unix诞生的时间），即1970-01-01 00:00:00 DST：夏令时 - daylight time，即在高纬度地区，由">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://yoursite.com/images/time_about_mindmapping.png">
+<meta property="article:published_time" content="2020-10-19T15:46:01.000Z">
+<meta property="article:modified_time" content="2020-10-19T15:46:12.187Z">
+<meta property="article:author" content="-_-">
+<meta property="article:tag" content="编程通用">
+<meta property="article:tag" content="Go">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/time_about_mindmapping.png">
+
+<link rel="canonical" href="http://yoursite.com/2020/10/19/%E8%BF%99%E6%AC%A1%E6%9D%A5%E6%90%9E%E6%87%82%E8%AE%A1%E7%AE%97%E6%9C%BA%E9%87%8C%E9%9D%A2%E7%9A%84%E6%97%B6%E9%97%B4/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>这次来搞懂计算机里面的时间 | pd</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">pd</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">一瞥之见</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/10/19/%E8%BF%99%E6%AC%A1%E6%9D%A5%E6%90%9E%E6%87%82%E8%AE%A1%E7%AE%97%E6%9C%BA%E9%87%8C%E9%9D%A2%E7%9A%84%E6%97%B6%E9%97%B4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="-_-">
+      <meta itemprop="description" content="15652616715">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="pd">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          这次来搞懂计算机里面的时间
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-10-19 23:46:01 / 修改时间：23:46:12" itemprop="dateCreated datePublished" datetime="2020-10-19T23:46:01+08:00">2020-10-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
+                    <span itemprop="name">编程</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="背景说明"><a href="#背景说明" class="headerlink" title="背景说明"></a>背景说明</h3><p>用了很久的时间，但是最近在看<a href="https://book.douban.com/subject/25809330/" target="_blank" rel="noopener">《Linux/UNIX系统编程手册》-第10章（时间）</a>以及通读了<a href="https://golang.org/pkg/time/" target="_blank" rel="noopener">Go的time包的文档</a>后发现对于常使用的时间可谓是知之甚少，不过目前自认感觉是认知比较清楚了，特此记录</p>
+<h3 id="名词解释"><a href="#名词解释" class="headerlink" title="名词解释"></a>名词解释</h3><ul>
+<li>UTC/GMT：通用协调时间/格林威治标准时间（大概也是unix诞生的时间），即1970-01-01 00:00:00</li>
+<li>DST：夏令时 - daylight time，即在高纬度地区，由于夏冬季节的白昼时间相差很大（夏季比冬季长），有些地区会在夏季将时间调快的做法，亚洲和非洲基本都不实施（包括中国）</li>
+<li>CST：China Standard Time，UTC/gMT+0800（即表示在通用协调时间要+8小时）（+0800的意思来源于+hhmm）</li>
+<li>Location：时区，核心构成有 名字（如CST），对于UTC时间的偏移（如+0800），是否使用夏令时，…</li>
+</ul>
+<h3 id="概念细化"><a href="#概念细化" class="headerlink" title="概念细化"></a>概念细化</h3><h4 id="程序所拥有的时间类型"><a href="#程序所拥有的时间类型" class="headerlink" title="程序所拥有的时间类型"></a>程序所拥有的时间类型</h4><h5 id="1-日历时间-Wall-clock"><a href="#1-日历时间-Wall-clock" class="headerlink" title="1. 日历时间 - Wall clock:"></a>1. 日历时间 - Wall clock:</h5><ul>
+<li>Unix系统本身记录的值都是自UTC以来的秒数和纳秒数（*）</li>
+<li>Go中的Time<ul>
+<li>数据结构：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">  type Time struct &#123;</span><br><span class="line">wall uint64  </span><br><span class="line">ext  int64</span><br><span class="line"></span><br><span class="line">loc *Location  &#x2F;&#x2F; nil location means UTC</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></li>
+<li>结构说明：<ul>
+<li>wall的组成（从高到低）：第1位flag表示是否有monotonic clock；33位表示秒；30位表示nanoseconds；</li>
+<li>若无monotonic，则33位必须为0，然后完整的64为的ext存储wall seconds since 1年1月1日；</li>
+<li>若有monotonic，33位存储自1885年1月1日以来的wall seconds，ext的64位存储有符号的monotonic reading（表示的是nanoseconds since process start）</li>
+<li>loc：指向所用时区信息的指针</li>
+</ul>
+</li>
+<li>以fmt.Println(time.Now())为例看看其输出的Local的日历时间（先忽略单调时间部分）是什么样子：<ul>
+<li>2020-10-10 15:19:04.094973 +0800 CST</li>
+<li>拆分来看就是：<ul>
+<li>日期：2020-10-10</li>
+<li>时钟：15:19:04.094973</li>
+<li>所在时区对比UTC的偏移量：+0800</li>
+<li>Local所在时区的名字：CST</li>
+</ul>
+</li>
+<li><b>过程说明：（*）说了系统记录的是自UTC以来的时间戳，那么Go这里是如何输出到本地时间的呢？</b><ul>
+<li>/usr/share/zoneinfo目录下记录了各个时区对应于UTC时间的偏移以及时区的名字</li>
+<li>/etc/localtime是一个link，其链接到/usr/share/zoneinfo目录下的某一个文件，表达的是此计算机的<b>系统本地时间</b>就是此时区</li>
+<li>结合以上两点就知道了，程序在启动时候通过/etc/localtime获取了Local的时区信息，故对从（*）获取的时间做相应的偏移即可</li>
+<li>备注：也有办法覆盖/etc/localtime为程序设定特定的时区：设置<b>环境变量TZ</b>（注意，一般此环境变量应该不存在，不存在才会去使用/etc/localtime，若存在且值为空，会使用UTC，否则使用指定的值）</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>注意点：程序中的日历时间不一定是单调递增的，如果系统要和某个网络的时间同步、甚至是就是去修改了系统时间那么可能就会导致时间回到过去</li>
+<li>特别说明两个常用到的规范时间format的标准：<ul>
+<li><a href="https://zh.wikipedia.org/wiki/ISO_8601" target="_blank" rel="noopener">ISO 8601</a>：<ul>
+<li>e.g：2004-05-03T17:30:08+08:00（日期和时间合并表示时，要在时间前面加一大写字母T）</li>
+<li>e.g：2020-10-19T00:15:38Z（如果时间在零时区，并恰好与协调世界时相同，那么（不加空格地）在时间最后加一个大写字母Z。Z是相对协调世界时时间0偏移的代号。）</li>
+</ul>
+</li>
+<li><a href="https://tools.ietf.org/html/rfc3339" target="_blank" rel="noopener">RFC 3339</a>:来源于ISO8601并为了简化ISO8601（只有一点点的不同），建议程序员阅读和使用此规范<ul>
+<li>与 ISO 8601不同的地方：<ul>
+<li>ISO 8601 permits the hour to be “24”, this profile of ISO 8601 only allows values between “00” and “23” for the hour in order to reduce confusion.</li>
+</ul>
+</li>
+<li>总结来说，推荐在格式化表示日期和时间时使用此格式2004-05-03T17:30:08+08:00</li>
+<li>e.g: 在Go中指定使用RFC3339规范的例子(如此只要项目规定好都使用此规范，在解析时就不用去记录2006-01-02 15:04:05这种了，而且抽象度/灵活度更高)  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">t, _ &#x3D; time.Parse(time.RFC3339, &quot;2006-01-02T15:04:05Z&quot;)</span><br><span class="line">fmt.Println(t) &#x2F;&#x2F; 2006-01-02 15:04:05 +0000 UTC</span><br><span class="line">t, _ &#x3D; time.Parse(time.RFC3339, &quot;2006-01-02T15:04:05+07:00&quot;)  </span><br><span class="line">fmt.Println(t) &#x2F;&#x2F; 2006-01-02 15:04:05 +0700 +0700</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h5 id="2-单调时间-Monotonic-clock"><a href="#2-单调时间-Monotonic-clock" class="headerlink" title="2. 单调时间 - Monotonic clock:"></a>2. 单调时间 - Monotonic clock:</h5><ul>
+<li>可以认为是此程序自开始以来占用的cpu时间(还是精确到纳秒的时间戳)，故其一定是单调递增的（单调时间只在同进程内有比较等意义）</li>
+<li>以go语言为例来看看（以下为在<a href="https://play.golang.org/" target="_blank" rel="noopener">go playground</a>中运行的例子）：<ul>
+<li>代码<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">package main</span><br><span class="line">import (</span><br><span class="line">    &quot;fmt&quot;</span><br><span class="line">    &quot;time&quot;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">func main() &#123;</span><br><span class="line">    time.Sleep(time.Second * 2)</span><br><span class="line">    fmt.Println(time.Now())</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>输出：2009-11-10 23:00:02 +0000 UTC m=+2.000000001<ul>
+<li>最后的那个m=+2.000000001即是程序运行的Monotonic clock</li>
+</ul>
+</li>
+<li>说明：Go中计算两个Time instance的差值时（t.After(u), t.Before(u), t.Equal(u), t.Sub(u)）、如果都有单调时间，则优先使用单调时间</li>
+</ul>
+</li>
+<li>注意，在Go中如果使用==来比较两个Time实例，在Monotonic clock存在的情况下也会纳入比较！</li>
+</ul>
+<h3 id="详细说明"><a href="#详细说明" class="headerlink" title="详细说明"></a>详细说明</h3><p>由于我在使用marginnote 3记录笔记的，实际其中还记录了很多更为细节的东西，但是其导出PDF却总是不成功，只能通过导出到ithoughts，但是其中的细节又被变成来注释。权且当目录看吧（完全版可下载附件并用marginnote3打开）</p>
+<h4 id="笔记目录"><a href="#笔记目录" class="headerlink" title="笔记目录"></a>笔记目录</h4><ul>
+<li><font color=#AF7C19>此颜色主要知识来自书Linux/UNIX系统编程手册</font></li>
+<li><font color=#B5FDB8>此颜色表示是unix command</font></li>
+<li><font color=#9FCEFD>此颜色表示是Go语言相关的内容（主要来自Go官方time包的文档）</font><br><img src="/images/time_about_mindmapping.png" alt="time_about_mindmapping"></li>
+</ul>
+<h4 id="笔记详细（使用MarginNote-3打开）"><a href="#笔记详细（使用MarginNote-3打开）" class="headerlink" title="笔记详细（使用MarginNote 3打开）"></a>笔记详细（使用MarginNote 3打开）</h4><p><a href="https://github.com/pillipanda/pillipanda.github.io/attachments/time.marginpkg" target="_blank" rel="noopener">附件地址</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%BC%96%E7%A8%8B%E9%80%9A%E7%94%A8/" rel="tag"># 编程通用</a>
+              <a href="/tags/Go/" rel="tag"># Go</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/08/30/%E8%A1%8C%E4%B8%BA%E7%9B%B8%E5%85%B3%E7%9A%849%E7%A7%8D%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="prev" title="行为类相关的9种设计模式">
+      <i class="fa fa-chevron-left"></i> 行为类相关的9种设计模式
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#背景说明"><span class="nav-number">1.</span> <span class="nav-text">背景说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#名词解释"><span class="nav-number">2.</span> <span class="nav-text">名词解释</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#概念细化"><span class="nav-number">3.</span> <span class="nav-text">概念细化</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#程序所拥有的时间类型"><span class="nav-number">3.1.</span> <span class="nav-text">程序所拥有的时间类型</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-日历时间-Wall-clock"><span class="nav-number">3.1.1.</span> <span class="nav-text">1. 日历时间 - Wall clock:</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-单调时间-Monotonic-clock"><span class="nav-number">3.1.2.</span> <span class="nav-text">2. 单调时间 - Monotonic clock:</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#详细说明"><span class="nav-number">4.</span> <span class="nav-text">详细说明</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#笔记目录"><span class="nav-number">4.1.</span> <span class="nav-text">笔记目录</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#笔记详细（使用MarginNote-3打开）"><span class="nav-number">4.2.</span> <span class="nav-text">笔记详细（使用MarginNote 3打开）</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">-_-</p>
+  <div class="site-description" itemprop="description">15652616715</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">11</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">-_-</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'edf9b4cf38817a8e9705',
+      clientSecret: 'a9e7395b37100257f052db822d40873b9fca18a5',
+      repo: 'pillipanda.github.io',
+      owner: 'pillipanda',
+      admin: ['pillipanda'],
+      id: 'df8a2b990a5d536deb2e236e94e8debc',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>
