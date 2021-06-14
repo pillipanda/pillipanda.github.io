@@ -55,7 +55,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://yoursite.com/images/cap-c.png">
 <meta property="article:published_time" content="2021-06-14T09:15:15.000Z">
-<meta property="article:modified_time" content="2021-06-14T13:15:52.940Z">
+<meta property="article:modified_time" content="2021-06-14T13:44:29.584Z">
 <meta property="article:author" content="-_-">
 <meta property="article:tag" content="分布式系统理论&#x2F;协议&#x2F;算法&#x2F;应用">
 <meta name="twitter:card" content="summary">
@@ -197,7 +197,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2021-06-14 17:15:15 / 修改时间：21:15:52" itemprop="dateCreated datePublished" datetime="2021-06-14T17:15:15+08:00">2021-06-14</time>
+              <time title="创建时间：2021-06-14 17:15:15 / 修改时间：21:44:29" itemprop="dateCreated datePublished" datetime="2021-06-14T17:15:15+08:00">2021-06-14</time>
             </span>
 
           
@@ -215,21 +215,21 @@
 <a id="more"></a>
 
 <blockquote>
-<p><strong>前言</strong><br>本文仅讨论故障容错系统，不讨论存在恶意节点情况下的分布式系统<br>本文进说明协议/算法之间的关系，暂时不做详细说明（避免搞错了本文的重点）</p>
+<p><strong>前言</strong><br>本文仅讨论故障容错系统，不讨论存在恶意节点情况下的分布式系统<br>本文仅说明协议/算法之间的关系，暂不做详细说明（避免搞错了本文的重点）</p>
 </blockquote>
 <h3 id="1：分布式系统的指导理论（不那么有用的CAP-gt-真正有用的PACELC）"><a href="#1：分布式系统的指导理论（不那么有用的CAP-gt-真正有用的PACELC）" class="headerlink" title="1：分布式系统的指导理论（不那么有用的CAP -&gt; 真正有用的PACELC）"></a>1：分布式系统的指导理论（不那么有用的CAP -&gt; 真正有用的PACELC）</h3><h4 id="CAP"><a href="#CAP" class="headerlink" title="CAP"></a>CAP</h4><h5 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h5><ul>
-<li>C - consistency 线性/强一致性：客户端的没错读操作，不管访问哪个节点，要么读到的是同一份“最新”写入的数据，要么读取失败。注意，这里的最新指的是读取事务开始时间之前的已提交事务的值，见下图（<a href="https://pingcap.com/blog-cn/linearizability-and-raft/" target="_blank" rel="noopener">此图来自</a>），图中的D读到的数还是1才对：<br><img src="/images/cap-c.png" alt="cap-c"></li>
+<li>C - consistency 线性/强一致性：客户端的每次读操作，不管访问哪个节点，要么读到的是同一份“最新”写入的数据，要么读取失败。注意，这里的最新指的是读取事务开始时间之前的已提交事务的值，见下图（<a href="https://pingcap.com/blog-cn/linearizability-and-raft/" target="_blank" rel="noopener">此图来自</a>），图中的D读到的数还是1才对：<br><img src="/images/cap-c.png" alt="cap-c"></li>
 <li>A - availability 可用性：任何来自客户的请求，不管访问哪个非故障节点，都能得到响应数据，但是不保证是同一份最新的数据</li>
 <li>P - partition tolerence 分区容错性：当集群存在节点间通信问题时，若系统仍能继续工作，就是满足分区容错性的。由于分区通信故障不可避免的存在，故P是必须要保证满足的</li>
 </ul>
-<h5 id="常见误区之只能选择CP或者AP吗？"><a href="#常见误区之只能选择CP或者AP吗？" class="headerlink" title="常见误区之只能选择CP或者AP吗？"></a>常见误区之只能选择CP或者AP吗？</h5><p>上面说了，P是必须保证的。有理论证明，CAP是不能够同时保证的，故剩下的就是只能选择CP系统orAP系统了。<br>但是，实际情况是绝大部分时间是不存在节点间通信问题的（即绝大时间P是满足的），在P满足时，CA时可以共存的。<br>到这里，问题就转化为了，在你设计/分析分布式系统时，应该分以下两步：</p>
+<h5 id="常见误区之只能选择CP或者AP吗？"><a href="#常见误区之只能选择CP或者AP吗？" class="headerlink" title="常见误区之只能选择CP或者AP吗？"></a>常见误区之只能选择CP或者AP吗？</h5><p>上面说了，P是必须保证的。有理论证明，CAP是不能够同时保证的，故剩下的就是只能选择CP系统或AP系统了。<br>但是，实际情况是绝大部分时间是不存在节点间通信问题的，在不存在分区问题时，CA时可以共存的。<br>到这里，问题就转化为了，在你设计/分析分布式系统时，应该分以下两步：</p>
 <ol>
 <li>若分区通信问题存在（P不能满足），你是要你的系统保证C（线性一致性）还是保证A（可用性）</li>
 <li>若分区通信问题不存在（P满足），如何衡量CA的问题（见下面的PACELC理论）</li>
 </ol>
-<h4 id="PACELC"><a href="#PACELC" class="headerlink" title="PACELC"></a>PACELC</h4><h5 id="定义-1"><a href="#定义-1" class="headerlink" title="定义"></a>定义</h5><p>PACELC理论是CAP理论的扩展，定义是：如果有分区partition（P），系统就必须在 可用性-availiability（A）和 线性一致性-consistency(C) 之间取得平衡；否则（E）当系统运行在无分区情况下，系统需要在 延迟性-Latency（L）和 一致性-consistency（C）之间取得平衡。</p>
-<h5 id="延迟性和一致性之前做取舍的说明："><a href="#延迟性和一致性之前做取舍的说明：" class="headerlink" title="延迟性和一致性之前做取舍的说明："></a>延迟性和一致性之前做取舍的说明：</h5><p>要保证系统数据的高可用（high availability）那么有个技术方案是采用数据冗余备份的方式，那么就涉及到复制数据，而进行分布式系统的数据复制，就会出现在 Consistency 和 Latency 之间做个取舍的要求。</p>
-<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>到目前为止，我们知道了设计/分析分布式理论的第一步就是依据PACELC理论指导的，分别考虑在P存在时候的可用性与线性一致性之间的取舍以及P不存在时候的延迟和一致性之间的取舍。<br>下面就会分别来介绍可用性与一致性及其取舍、延迟和一致性及其取舍</p>
+<h4 id="PACELC"><a href="#PACELC" class="headerlink" title="PACELC"></a>PACELC</h4><p>PACELC理论是CAP理论的扩展</p>
+<h5 id="定义-1"><a href="#定义-1" class="headerlink" title="定义"></a>定义</h5><p>如果有分区partition（P），系统就必须在 可用性-availiability（A）和 线性一致性-consistency(C) 之间取得平衡；<br>否则（E）当系统运行在无分区情况下，系统需要在 延迟-Latency（L）和 一致性-consistency（C）之间取得平衡。</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>到目前为止，我们知道了设计/分析分布式理论的第一步就是依据PACELC理论指导，分别考虑在P存在时候的可用性与线性一致性之间的取舍以及P不存在时候的延迟和一致性之间的取舍。<br>下面就会分别来介绍可用性与一致性及其取舍、延迟和一致性及其取舍</p>
 <h3 id="2-1-A-可用性"><a href="#2-1-A-可用性" class="headerlink" title="2.1: A - 可用性"></a>2.1: A - 可用性</h3><p>设计一个可用性高的系统的指导理论是BASE理论。BASE 理论是 CAP 理论中的 AP 的延伸，是对互联网大规模分布式系统的实践总结，强调可用性。</p>
 <h4 id="BASE理论定义"><a href="#BASE理论定义" class="headerlink" title="BASE理论定义"></a>BASE理论定义</h4><p>核心就是<strong>基本可用</strong>（Basically Available）和<strong>最终一致性</strong>（Eventually consistent）。</p>
 <h5 id="基本可用"><a href="#基本可用" class="headerlink" title="基本可用"></a>基本可用</h5><p>当分布式系统在出现不可预知的故障时，允许损失部分功能的可用性，保障<strong>核心功能的可用性</strong>。这里面自然也包含了不是查到最新数据的情况。<br>常见的一些实现招式：</p>
@@ -261,7 +261,7 @@
 <li>第二阶段 - 提交执行阶段</li>
 </ol>
 <h5 id="TCC-try-commit-cancel"><a href="#TCC-try-commit-cancel" class="headerlink" title="TCC - try-commit-cancel"></a>TCC - try-commit-cancel</h5><p>实现：<br>2. 可以将 TCC 理解为编程模型，TCC 的 3 个操作是需要在业务代码中编码实现的，为了实现一致性，确认操作和补偿操作必须是等幂的，因为这 2 个操作可能会失败重试。<br>3. 一般来说都需要引入TCC框架来推动感知各个阶段的执行情况以及推进执行下一个阶段等等事情<br>4. 缺点：性能较低（所有服务都commit后、对应数据的下一个up/write事务才能进行）；协调节点单点故障；数据不一致（若confirm阶段出现部分服务发生网络故障不能得到commit信息）<br>具体实现原理可<a href="https://www.cnblogs.com/jajian/p/10014145.html" target="_blank" rel="noopener">参考</a></p>
-<h5 id="Percolator"><a href="#Percolator" class="headerlink" title="Percolator"></a>Percolator</h5><p>google提出、TiDB的分布式事务时基于此实现的。<br>针对TCC的优化说明：</p>
+<h5 id="Percolator"><a href="#Percolator" class="headerlink" title="Percolator"></a>Percolator</h5><p>google提出、TiDB的分布式事务是基于此实现的。<br>针对TCC的优化说明：</p>
 <ol>
 <li>简化了协调节点和切片的通信流程，让协调节点只跟其中一个primary切片通信，一方面，减少了通信开销，另一方面，避免了因为故障，commit阶段部分节点通信失败导致的数据不一致问题（针对TCC的缺点3的情况、commit通知的时候没有通知到某些切片）。</li>
 <li>prepare阶段记录了日志，这样即使协调节点故障了，恢复后也可以根据日志来做事务恢复。（通过主切片发现已提交、可自己再提交）</li>
@@ -269,51 +269,7 @@
 <li>支持了读取历史版本数据</li>
 </ol>
 <p>具体实现原理可<a href="https://tikv.org/deep-dive/distributed-transaction/percolator/#what-is-percolator" target="_blank" rel="noopener">参考</a></p>
-<h3 id="2-3：延迟与一致性之间的取舍"><a href="#2-3：延迟与一致性之间的取舍" class="headerlink" title="2.3：延迟与一致性之间的取舍"></a>2.3：延迟与一致性之间的取舍</h3><p>前面已经说过了C - 线性一致性 和 A - 可用性实现的要点。但是忽略了一个非常重要的指标 - 延迟。然而延迟/性能是非常重要的指标，直接决定了用户的体验。这里就涉及到具体算法的选择了，这是指导需要根据自己系统对于一致性和性能的要求，选择正确的算法：</p>
-<table>
-<thead>
-<tr>
-<th>算法名称</th>
-<th>一致性</th>
-<th>延迟</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>2PC</td>
-<td>强一致性</td>
-<td>高</td>
-</tr>
-<tr>
-<td>TCC</td>
-<td>强一致性</td>
-<td>高</td>
-</tr>
-<tr>
-<td>Paxos</td>
-<td>强一致性</td>
-<td>中</td>
-</tr>
-<tr>
-<td>ZAB</td>
-<td>最终一致性</td>
-<td>中</td>
-</tr>
-<tr>
-<td>Raft</td>
-<td>强一致性</td>
-<td>中</td>
-</tr>
-<tr>
-<td>Gossip</td>
-<td>最终一致性</td>
-<td>高</td>
-</tr>
-<tr>
-<td>Quorum NWR</td>
-<td>强一致性</td>
-<td>中</td>
-</tr>
-</tbody></table>
+<h3 id="2-3：延迟与一致性之间的取舍"><a href="#2-3：延迟与一致性之间的取舍" class="headerlink" title="2.3：延迟与一致性之间的取舍"></a>2.3：延迟与一致性之间的取舍</h3><p>前面已经说过了C - 线性一致性 和 A - 可用性实现的要点。但是忽略了一个非常重要的指标 - 延迟。然而延迟/性能是非常重要的指标，直接决定了用户的体验。这里就涉及到具体算法的选择了，这是指导用户在不存在分区时，需要根据自己系统对于一致性和性能的要求，选择正确的算法：<br>| 算法名称   | 一致性     | 延迟 |<br>| ———- | ———- | —- |<br>| 2PC        | 强一致性   | 高   |<br>| TCC        | 强一致性   | 高   |<br>| Paxos      | 强一致性   | 中   |<br>| ZAB        | 最终一致性 | 中   |<br>| Raft       | 强一致性   | 中   |<br>| Gossip     | 最终一致性 | 高   |<br>| Quorum NWR | 强一致性   | 中   |</p>
 <h3 id="关于共识算法"><a href="#关于共识算法" class="headerlink" title="关于共识算法"></a>关于共识算法</h3><h4 id="定义-2"><a href="#定义-2" class="headerlink" title="定义"></a>定义</h4><p>解决的是如何在分布式系统中的多个节点之间就某个提议达成共识。</p>
 <h4 id="与分布式事务的关系"><a href="#与分布式事务的关系" class="headerlink" title="与分布式事务的关系"></a>与分布式事务的关系</h4><ol>
 <li>理解1: 共识算法可以应用于分布式事务的ACID中的A（原子提交）部分，解决的是参与分布式事务的所有“节点”该执行confirm还是cancel的共识问题。也就是说原子提交可以使用共识算法（即分布式事务的实现在A部分需要使用共识算法、但是不是使用了共识算法就完整支撑分布式事务了！）。</li>
@@ -331,7 +287,12 @@
 </ul>
 <h5 id="Gossip算法"><a href="#Gossip算法" class="headerlink" title="Gossip算法"></a>Gossip算法</h5><p>当性能要求最高、一致性要求低的就使用此算法</p>
 <h5 id="Quorum-NWR算法"><a href="#Quorum-NWR算法" class="headerlink" title="Quorum NWR算法"></a>Quorum NWR算法</h5><p>非常实用的一个算法，能有效弥补 AP 型系统缺乏强一致性的痛点，给业务提供了<strong>按需选择一致性级别</strong>的灵活度。</p>
-<h3 id="总结-1"><a href="#总结-1" class="headerlink" title="总结"></a>总结</h3><p>分布式存储系统，有太多的知识点，且有些概念/协议本身就存在模糊性，常常导致不知道各个概念之间的关系以及应该应用于分布式系统的什么位置。本文目的就是理清各个概念之间的关系及其应用点。后续会利用这些概念来分析一些我们用过的分布式系统。</p>
+<h3 id="总结-1"><a href="#总结-1" class="headerlink" title="总结"></a>总结</h3><p>分布式存储系统，有太多的知识点，且有些概念/协议本身就存在模糊性，常常导致不知道各个概念之间的关系以及应该应用于分布式系统的什么位置。本文目的就是理清各个概念之间的关系及其应用点。<br>总结起来就是：</p>
+<ol>
+<li>根据延迟与一致性之间的取舍选择合适的算法</li>
+<li>根据系统特点选择在分区发生时是否需要实现线性一致性（若需要的话、还要选择合适的共识算法来实现分布式事务中的原子性）</li>
+<li>根据系统特点选择在分区发生时是否需要实现可用性（若需要的话按照其包含的一些要点针对的进行设计）</li>
+</ol>
 
     </div>
 
@@ -414,7 +375,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#文章结构说明"><span class="nav-number">1.</span> <span class="nav-text">文章结构说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1：分布式系统的指导理论（不那么有用的CAP-gt-真正有用的PACELC）"><span class="nav-number">2.</span> <span class="nav-text">1：分布式系统的指导理论（不那么有用的CAP -&gt; 真正有用的PACELC）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#CAP"><span class="nav-number">2.1.</span> <span class="nav-text">CAP</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#定义"><span class="nav-number">2.1.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#常见误区之只能选择CP或者AP吗？"><span class="nav-number">2.1.2.</span> <span class="nav-text">常见误区之只能选择CP或者AP吗？</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#PACELC"><span class="nav-number">2.2.</span> <span class="nav-text">PACELC</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#定义-1"><span class="nav-number">2.2.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#延迟性和一致性之前做取舍的说明："><span class="nav-number">2.2.2.</span> <span class="nav-text">延迟性和一致性之前做取舍的说明：</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#总结"><span class="nav-number">2.3.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-A-可用性"><span class="nav-number">3.</span> <span class="nav-text">2.1: A - 可用性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#BASE理论定义"><span class="nav-number">3.1.</span> <span class="nav-text">BASE理论定义</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#基本可用"><span class="nav-number">3.1.1.</span> <span class="nav-text">基本可用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#最终一致性"><span class="nav-number">3.1.2.</span> <span class="nav-text">最终一致性</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2：C-线性一致性"><span class="nav-number">4.</span> <span class="nav-text">2.2：C - 线性一致性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#线性一致性与分布式事务的关系"><span class="nav-number">4.1.</span> <span class="nav-text">线性一致性与分布式事务的关系</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分布式事务与ACID的关系"><span class="nav-number">4.2.</span> <span class="nav-text">分布式事务与ACID的关系</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ACID的定义"><span class="nav-number">4.3.</span> <span class="nav-text">ACID的定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分布式事务实现的协议-算法"><span class="nav-number">4.4.</span> <span class="nav-text">分布式事务实现的协议&#x2F;算法</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#2PC-两阶段提交协议"><span class="nav-number">4.4.1.</span> <span class="nav-text">2PC - 两阶段提交协议</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#TCC-try-commit-cancel"><span class="nav-number">4.4.2.</span> <span class="nav-text">TCC - try-commit-cancel</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Percolator"><span class="nav-number">4.4.3.</span> <span class="nav-text">Percolator</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3：延迟与一致性之间的取舍"><span class="nav-number">5.</span> <span class="nav-text">2.3：延迟与一致性之间的取舍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#关于共识算法"><span class="nav-number">6.</span> <span class="nav-text">关于共识算法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#定义-2"><span class="nav-number">6.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#与分布式事务的关系"><span class="nav-number">6.2.</span> <span class="nav-text">与分布式事务的关系</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#具体协议-算法"><span class="nav-number">6.3.</span> <span class="nav-text">具体协议&#x2F;算法</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Paxos算法"><span class="nav-number">6.3.1.</span> <span class="nav-text">Paxos算法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Raft算法"><span class="nav-number">6.3.2.</span> <span class="nav-text">Raft算法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Gossip算法"><span class="nav-number">6.3.3.</span> <span class="nav-text">Gossip算法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Quorum-NWR算法"><span class="nav-number">6.3.4.</span> <span class="nav-text">Quorum NWR算法</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结-1"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#文章结构说明"><span class="nav-number">1.</span> <span class="nav-text">文章结构说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1：分布式系统的指导理论（不那么有用的CAP-gt-真正有用的PACELC）"><span class="nav-number">2.</span> <span class="nav-text">1：分布式系统的指导理论（不那么有用的CAP -&gt; 真正有用的PACELC）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#CAP"><span class="nav-number">2.1.</span> <span class="nav-text">CAP</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#定义"><span class="nav-number">2.1.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#常见误区之只能选择CP或者AP吗？"><span class="nav-number">2.1.2.</span> <span class="nav-text">常见误区之只能选择CP或者AP吗？</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#PACELC"><span class="nav-number">2.2.</span> <span class="nav-text">PACELC</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#定义-1"><span class="nav-number">2.2.1.</span> <span class="nav-text">定义</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#总结"><span class="nav-number">2.3.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-A-可用性"><span class="nav-number">3.</span> <span class="nav-text">2.1: A - 可用性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#BASE理论定义"><span class="nav-number">3.1.</span> <span class="nav-text">BASE理论定义</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#基本可用"><span class="nav-number">3.1.1.</span> <span class="nav-text">基本可用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#最终一致性"><span class="nav-number">3.1.2.</span> <span class="nav-text">最终一致性</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2：C-线性一致性"><span class="nav-number">4.</span> <span class="nav-text">2.2：C - 线性一致性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#线性一致性与分布式事务的关系"><span class="nav-number">4.1.</span> <span class="nav-text">线性一致性与分布式事务的关系</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分布式事务与ACID的关系"><span class="nav-number">4.2.</span> <span class="nav-text">分布式事务与ACID的关系</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ACID的定义"><span class="nav-number">4.3.</span> <span class="nav-text">ACID的定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分布式事务实现的协议-算法"><span class="nav-number">4.4.</span> <span class="nav-text">分布式事务实现的协议&#x2F;算法</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#2PC-两阶段提交协议"><span class="nav-number">4.4.1.</span> <span class="nav-text">2PC - 两阶段提交协议</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#TCC-try-commit-cancel"><span class="nav-number">4.4.2.</span> <span class="nav-text">TCC - try-commit-cancel</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Percolator"><span class="nav-number">4.4.3.</span> <span class="nav-text">Percolator</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3：延迟与一致性之间的取舍"><span class="nav-number">5.</span> <span class="nav-text">2.3：延迟与一致性之间的取舍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#关于共识算法"><span class="nav-number">6.</span> <span class="nav-text">关于共识算法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#定义-2"><span class="nav-number">6.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#与分布式事务的关系"><span class="nav-number">6.2.</span> <span class="nav-text">与分布式事务的关系</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#具体协议-算法"><span class="nav-number">6.3.</span> <span class="nav-text">具体协议&#x2F;算法</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Paxos算法"><span class="nav-number">6.3.1.</span> <span class="nav-text">Paxos算法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Raft算法"><span class="nav-number">6.3.2.</span> <span class="nav-text">Raft算法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Gossip算法"><span class="nav-number">6.3.3.</span> <span class="nav-text">Gossip算法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Quorum-NWR算法"><span class="nav-number">6.3.4.</span> <span class="nav-text">Quorum NWR算法</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结-1"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
