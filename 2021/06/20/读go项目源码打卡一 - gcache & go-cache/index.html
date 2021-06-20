@@ -46,31 +46,35 @@
   };
 </script>
 
-  <meta name="description" content="15652616715">
-<meta property="og:type" content="website">
-<meta property="og:title" content="pd">
-<meta property="og:url" content="http://yoursite.com/page/2/index.html">
+  <meta name="description" content="最近开始准备持续的读一些go项目的代码，先从一些简单的入手，最后目标是读TiDB源码。打卡一选择了单机kv内存缓存的实现其中star比较多的go-cache和gcache（都是实现了并发安全的）。记录了其代码结构以及我从每个项目学习到的东西">
+<meta property="og:type" content="article">
+<meta property="og:title" content="读go项目源码打卡一 - gcache &amp; go-cache">
+<meta property="og:url" content="http://yoursite.com/2021/06/20/%E8%AF%BBgo%E9%A1%B9%E7%9B%AE%E6%BA%90%E7%A0%81%E6%89%93%E5%8D%A1%E4%B8%80%20-%20gcache%20&%20go-cache/index.html">
 <meta property="og:site_name" content="pd">
-<meta property="og:description" content="15652616715">
+<meta property="og:description" content="最近开始准备持续的读一些go项目的代码，先从一些简单的入手，最后目标是读TiDB源码。打卡一选择了单机kv内存缓存的实现其中star比较多的go-cache和gcache（都是实现了并发安全的）。记录了其代码结构以及我从每个项目学习到的东西">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://yoursite.com/images/go-cache.svg">
+<meta property="og:image" content="http://yoursite.com/images/gcache.svg">
+<meta property="article:published_time" content="2021-06-20T09:30:00.000Z">
+<meta property="article:modified_time" content="2021-06-20T11:42:17.237Z">
 <meta property="article:author" content="-_-">
-<meta property="article:tag" content="Python">
-<meta property="article:tag" content=" Go">
+<meta property="article:tag" content="缓存">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/go-cache.svg">
 
-<link rel="canonical" href="http://yoursite.com/page/2/">
+<link rel="canonical" href="http://yoursite.com/2021/06/20/%E8%AF%BBgo%E9%A1%B9%E7%9B%AE%E6%BA%90%E7%A0%81%E6%89%93%E5%8D%A1%E4%B8%80%20-%20gcache%20&%20go-cache/">
 
 
 <script id="page-configurations">
   // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
-    isHome: true,
-    isPost: false
+    isHome: false,
+    isPost: true
   };
 </script>
 
-  <title>pd</title>
+  <title>读go项目源码打卡一 - gcache & go-cache | pd</title>
   
 
 
@@ -166,11 +170,11 @@
             
 
   <div class="posts-expand">
-        
+      
   
   
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/21/%E8%B0%88%E8%B0%88%E8%B0%83%E7%94%A8%E8%BF%94%E5%9B%9E/">
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/06/20/%E8%AF%BBgo%E9%A1%B9%E7%9B%AE%E6%BA%90%E7%A0%81%E6%89%93%E5%8D%A1%E4%B8%80%20-%20gcache%20&%20go-cache/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -183,8 +187,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/06/21/%E8%B0%88%E8%B0%88%E8%B0%83%E7%94%A8%E8%BF%94%E5%9B%9E/" class="post-title-link" itemprop="url">谈谈调用链中的异常处理问题</a>
+          读go项目源码打卡一 - gcache & go-cache
         </h1>
 
         <div class="post-meta">
@@ -193,26 +196,9 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
+              
 
-              <time title="创建时间：2020-06-21 22:41:36" itemprop="dateCreated datePublished" datetime="2020-06-21T22:41:36+08:00">2020-06-21</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-08-30 21:25:09" itemprop="dateModified" datetime="2020-08-30T21:25:09+08:00">2020-08-30</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
-                    <span itemprop="name">编程</span>
-                  </a>
-                </span>
+              <time title="创建时间：2021-06-20 17:30:00 / 修改时间：19:42:17" itemprop="dateCreated datePublished" datetime="2021-06-20T17:30:00+08:00">2021-06-20</time>
             </span>
 
           
@@ -226,190 +212,54 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <blockquote>
-<p>由于调用很多情况下都存在子调用、而子调用链上很可能某一环就抛出了异常，此文主要讲我是怎么看待和处理这种情况的</p>
+        <blockquote>
+<p>最近开始准备持续的读一些go项目的代码，先从一些简单的入手，最后目标是读TiDB源码。<br>打卡一选择了单机kv内存缓存的实现其中star比较多的go-cache和gcache（都是实现了并发安全的）。记录了其代码结构以及我从每个项目学习到的东西</p>
 </blockquote>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2020/06/21/%E8%B0%88%E8%B0%88%E8%B0%83%E7%94%A8%E8%BF%94%E5%9B%9E/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
+<a id="more"></a>
+
+<blockquote>
+<p><strong>前言</strong><br>本文的代码结构说明图并非完全是原本的代码实现的结构，去除了一些非核心的功能点（只列出了关键/我关心的部分）</p>
+</blockquote>
+<h3 id="go-cache-🌟🌟🌟"><a href="#go-cache-🌟🌟🌟" class="headerlink" title="go-cache - 🌟🌟🌟"></a><a href="https://github.com/patrickmn/go-cache" target="_blank" rel="noopener">go-cache</a> - 🌟🌟🌟</h3><h4 id="项目简介："><a href="#项目简介：" class="headerlink" title="项目简介："></a>项目简介：</h4><p>最简单的一个项目，通过map实现的kv缓存，无任何淘汰策略（直接淘汰）</p>
+<h4 id="代码结构梳理："><a href="#代码结构梳理：" class="headerlink" title="代码结构梳理："></a>代码结构梳理：</h4><p><img src="/images/go-cache.svg" alt="go-cache代码梳理"></p>
+<h4 id="学到的东西："><a href="#学到的东西：" class="headerlink" title="学到的东西："></a>学到的东西：</h4><ol>
+<li>其代码层级很好，将实现管理过期key逻辑的部分抽象到数据结构janitor来实现！使得cache结构能够专注的实现自己的逻辑</li>
+<li>通过runtime.SetFinalizer实现绑定关闭janitor定期维护过期key的goroutine的逻辑到Cache的生命周期，避免了需要用户手动调用来关闭（万一用户忘记调用了呢！）</li>
+</ol>
+<h3 id="gcache-🌟🌟🌟🌟🌟"><a href="#gcache-🌟🌟🌟🌟🌟" class="headerlink" title="gcache - 🌟🌟🌟🌟🌟"></a><a href="https://github.com/bluele/gcache" target="_blank" rel="noopener">gcache</a> - 🌟🌟🌟🌟🌟</h3><h4 id="项目简介：-1"><a href="#项目简介：-1" class="headerlink" title="项目简介："></a>项目简介：</h4><p>非常好的一个项目，实现了simple、LRU、LFU、ARC四种缓存淘汰策略</p>
+<h4 id="代码结构梳理：-1"><a href="#代码结构梳理：-1" class="headerlink" title="代码结构梳理："></a>代码结构梳理：</h4><p><img src="/images/gcache.svg" alt="gcache代码梳理"></p>
+<h4 id="学到的东西：-1"><a href="#学到的东西：-1" class="headerlink" title="学到的东西："></a>学到的东西：</h4><ol>
+<li>用户初始化的代码入口很优雅，使用了建造者模式、且融合了简单工厂模式。</li>
+<li>代码层级和变化隔离实现的非常好！顶层的Cache interface定义，公有属性部分的baseCache（且通过CacheBuilder持有全部baseCache的属性，每个具体策略在new时调用相同的buildCache函数实现了共同的baseCache部分属性的初始化！），然后是嵌套的statsAccessor interface通过stats实现嵌入到了baseCache，使得全部具体实现类都完全不需要管stats那部分的逻辑实现！<b>这部分非常值得学习</b></li>
+<li>stats中的数值并发读写使用了atomic包提供的硬件原子同步、性能更高</li>
+<li>LRU/LFU/ARC算法的实现</li>
+<li>list.List的相关接口的熟悉</li>
+</ol>
+
     </div>
 
     
     
     
-       <br><br>
-  </article>
-  
-  
-  
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%BC%93%E5%AD%98/" rel="tag"># 缓存</a>
+          </div>
 
         
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/21/%E4%B8%80%E4%B8%AA%E5%90%88%E6%A0%BC%E7%9A%84IO%E5%AF%86%E9%9B%86%E5%9E%8Basync-consumer/">
 
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="-_-">
-      <meta itemprop="description" content="15652616715">
-    </span>
 
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="pd">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/06/21/%E4%B8%80%E4%B8%AA%E5%90%88%E6%A0%BC%E7%9A%84IO%E5%AF%86%E9%9B%86%E5%9E%8Basync-consumer/" class="post-title-link" itemprop="url">一个合格的IO密集型async consumer</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-06-21 16:23:41" itemprop="dateCreated datePublished" datetime="2020-06-21T16:23:41+08:00">2020-06-21</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-08-30 21:28:42" itemprop="dateModified" datetime="2020-08-30T21:28:42+08:00">2020-08-30</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
-                    <span itemprop="name">编程</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <blockquote>
-<p>我在实际工程中的基于python协程consumer考虑到的优化点</p>
-</blockquote>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2020/06/21/%E4%B8%80%E4%B8%AA%E5%90%88%E6%A0%BC%E7%9A%84IO%E5%AF%86%E9%9B%86%E5%9E%8Basync-consumer/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
         
-      
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/06/14/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%EF%BC%88-%EF%BC%89%EF%BC%9A%E4%B8%80%E4%BA%9B%E7%9B%B8%E5%85%B3%E5%9F%BA%E7%A1%80%E7%90%86%E8%AE%BA%E5%8D%8F%E8%AE%AE%E7%AE%97%E6%B3%95%E5%BA%94%E7%94%A8%E5%8F%8A%E5%85%B6%E7%9B%B8%E4%BA%92%E4%B9%8B%E9%97%B4%E7%9A%84%E5%85%B3%E7%B3%BB/" rel="prev" title="分布式系统（-）：一些相关基础理论/协议/算法/应用及其相互之间的关系">
+      <i class="fa fa-chevron-left"></i> 分布式系统（-）：一些相关基础理论/协议/算法/应用及其相互之间的关系
+    </a></div>
+      <div class="post-nav-item"></div>
     </div>
-
+      </footer>
     
-    
-    
-       <br><br>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/31/Python-django-aiohttp-vs-Go-Echo-web-server%E5%8E%8B%E6%B5%8B%E6%80%A7%E8%83%BD%E5%AF%B9%E6%AF%94/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="-_-">
-      <meta itemprop="description" content="15652616715">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="pd">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/01/31/Python-django-aiohttp-vs-Go-Echo-web-server%E5%8E%8B%E6%B5%8B%E6%80%A7%E8%83%BD%E5%AF%B9%E6%AF%94/" class="post-title-link" itemprop="url">Python(django & aiohttp) vs Go(Echo) web server压测性能对比</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-01-31 17:23:41" itemprop="dateCreated datePublished" datetime="2020-01-31T17:23:41+08:00">2020-01-31</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-08-30 21:36:09" itemprop="dateModified" datetime="2020-08-30T21:36:09+08:00">2020-08-30</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
-                    <span itemprop="name">编程</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <blockquote>
-<p>对于一个真实工程稍做简化后分别使用Python(django &amp; aiohttp) &amp; Go(Echo)实现了一版进行压测</p>
-</blockquote>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2020/01/31/Python-django-aiohttp-vs-Go-Echo-web-server%E5%8E%8B%E6%B5%8B%E6%80%A7%E8%83%BD%E5%AF%B9%E6%AF%94/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-       <br><br>
   </article>
   
   
@@ -417,15 +267,10 @@
 
   </div>
 
-  
-  <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
-  </nav>
-
-
 
           </div>
           
+    <div class="comments" id="gitalk-container"></div>
 
 <script>
   window.addEventListener('tabs:register', () => {
@@ -472,6 +317,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#go-cache-🌟🌟🌟"><span class="nav-number">1.</span> <span class="nav-text">go-cache - 🌟🌟🌟</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#项目简介："><span class="nav-number">1.1.</span> <span class="nav-text">项目简介：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#代码结构梳理："><span class="nav-number">1.2.</span> <span class="nav-text">代码结构梳理：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#学到的东西："><span class="nav-number">1.3.</span> <span class="nav-text">学到的东西：</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#gcache-🌟🌟🌟🌟🌟"><span class="nav-number">2.</span> <span class="nav-text">gcache - 🌟🌟🌟🌟🌟</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#项目简介：-1"><span class="nav-number">2.1.</span> <span class="nav-text">项目简介：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#代码结构梳理：-1"><span class="nav-number">2.2.</span> <span class="nav-text">代码结构梳理：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#学到的东西：-1"><span class="nav-number">2.3.</span> <span class="nav-text">学到的东西：</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -582,6 +428,25 @@
 
   
 
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'edf9b4cf38817a8e9705',
+      clientSecret: 'a9e7395b37100257f052db822d40873b9fca18a5',
+      repo: 'pillipanda.github.io',
+      owner: 'pillipanda',
+      admin: ['pillipanda'],
+      id: '37f4d4fc2ae1ac62df98373642a0db6e',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
 
 </body>
 </html>
