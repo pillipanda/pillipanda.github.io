@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="记录自己demo测试runtime.SetFinalizer的运行未如期的排查过程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="记录 - 排查go的runtime.SetFinalizer未“如期”运行问题">
+<meta property="og:url" content="http://yoursite.com/2021/07/05/%E8%AE%B0%E5%BD%95%20-%20%E6%8E%92%E6%9F%A5go%E7%9A%84runtime.SetFinalizer%E6%9C%AA%E2%80%9C%E5%A6%82%E6%9C%9F%E2%80%9D%E8%BF%90%E8%A1%8C%E9%97%AE%E9%A2%98/index.html">
+<meta property="og:site_name" content="pd">
+<meta property="og:description" content="记录自己demo测试runtime.SetFinalizer的运行未如期的排查过程">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-07-05T06:30:00.000Z">
+<meta property="article:modified_time" content="2021-07-05T06:27:06.743Z">
+<meta property="article:author" content="-_-">
+<meta property="article:tag" content="go">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2021/07/05/%E8%AE%B0%E5%BD%95%20-%20%E6%8E%92%E6%9F%A5go%E7%9A%84runtime.SetFinalizer%E6%9C%AA%E2%80%9C%E5%A6%82%E6%9C%9F%E2%80%9D%E8%BF%90%E8%A1%8C%E9%97%AE%E9%A2%98/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>记录 - 排查go的runtime.SetFinalizer未“如期”运行问题 | pd</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">pd</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">一瞥之见</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/07/05/%E8%AE%B0%E5%BD%95%20-%20%E6%8E%92%E6%9F%A5go%E7%9A%84runtime.SetFinalizer%E6%9C%AA%E2%80%9C%E5%A6%82%E6%9C%9F%E2%80%9D%E8%BF%90%E8%A1%8C%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="-_-">
+      <meta itemprop="description" content="15652616715">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="pd">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          记录 - 排查go的runtime.SetFinalizer未“如期”运行问题
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-07-05 14:30:00 / 修改时间：14:27:06" itemprop="dateCreated datePublished" datetime="2021-07-05T14:30:00+08:00">2021-07-05</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>记录自己demo测试runtime.SetFinalizer的运行未如期的排查过程</p>
+</blockquote>
+<a id="more"></a>
+
+
+<h3 id="问题缘由"><a href="#问题缘由" class="headerlink" title="问题缘由"></a>问题缘由</h3><p>看<a href="https://github.com/patrickmn/go-cache/" target="_blank" rel="noopener">go-cache</a>源码时候发现其使用了runtime.SetFinalizer这个函数绑定关闭周期性清除过期key的goroutine 到cache本身的生命周期，也就是说cache被垃圾回收的时候会停止此goroutine。<br>所以我也就想自己写个demo试试是不是真正的有效，设计的demo是假设有一个school，school有一个看门狗（watch_dog），假设在school开着的时候狗每一秒叫（bark）一句【此操作单独在一个goroutine通过ticker实现】，当school关闭（垃圾回收）时候自然期望能够停止前面狗叫的goroutine。demo代码如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"log"</span></span><br><span class="line">	<span class="string">"runtime"</span></span><br><span class="line">	<span class="string">"time"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> dog <span class="keyword">struct</span> &#123;</span><br><span class="line">	stop <span class="keyword">chan</span> <span class="keyword">bool</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(d *dog)</span> <span class="title">dog_run</span><span class="params">()</span></span> &#123;</span><br><span class="line">	ticker := time.NewTicker(<span class="number">1</span> * time.Second)</span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		<span class="keyword">select</span> &#123;</span><br><span class="line">		<span class="keyword">case</span> &lt;-ticker.C:</span><br><span class="line">			log.Println(<span class="string">"bark"</span>)  <span class="comment">// 学校每秒钟都会</span></span><br><span class="line">		<span class="keyword">case</span> &lt;-d.stop:</span><br><span class="line">			ticker.Stop()</span><br><span class="line">			<span class="keyword">return</span></span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> School <span class="keyword">struct</span> &#123;</span><br><span class="line">	Students []<span class="keyword">string</span></span><br><span class="line">	dog      *dog</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *School)</span> <span class="title">doNothing</span><span class="params">()</span></span> &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">dog_stop</span><span class="params">(s *School)</span></span> &#123;</span><br><span class="line">	log.Println(<span class="string">"dog_stop get called"</span>)</span><br><span class="line">	s.dog.stop &lt;- <span class="literal">true</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *School)</span> <span class="title">new</span><span class="params">()</span></span> &#123;</span><br><span class="line">	watch_dog := dog&#123;<span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">bool</span>)&#125;</span><br><span class="line">	s.dog = &amp;watch_dog</span><br><span class="line">	<span class="keyword">go</span> watch_dog.dog_run()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewSchool</span><span class="params">(names ...<span class="keyword">string</span>)</span> *<span class="title">School</span></span> &#123;</span><br><span class="line">	school := School&#123;Students: names&#125;</span><br><span class="line">	school.<span class="built_in">new</span>()</span><br><span class="line">	runtime.SetFinalizer(&amp;school, dog_stop)  <span class="comment">// ！绑定停止狗叫的函数到school的生命周期</span></span><br><span class="line">	<span class="keyword">return</span> &amp;school</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	school := NewSchool([]<span class="keyword">string</span>&#123;<span class="string">"xx小学"</span>&#125;...)</span><br><span class="line">	school.doNothing()</span><br><span class="line">	time.Sleep(time.Second * <span class="number">4</span>)</span><br><span class="line">	school = <span class="literal">nil</span>  <span class="comment">// 关闭学校</span></span><br><span class="line">	time.Sleep(time.Second * <span class="number">360</span>)  <span class="comment">// 期望的是这其中的时候会看不到狗叫的输出</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><p>上面的demo代码输出如下（可见狗一直在叫、即使是在学校置空后6分钟也没有停止，故也就是并没有触发dog_stop函数）：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">021&#x2F;07&#x2F;05 09:11:13 bark</span><br><span class="line">2021&#x2F;07&#x2F;05 09:11:14 bark</span><br><span class="line">...</span><br><span class="line">2021&#x2F;07&#x2F;05 09:17:15 bark</span><br><span class="line">2021&#x2F;07&#x2F;05 09:17:16 bark</span><br></pre></td></tr></table></figure>
+
+<h3 id="排查过程"><a href="#排查过程" class="headerlink" title="排查过程"></a>排查过程</h3><h4 id="是因为没有GC吗？"><a href="#是因为没有GC吗？" class="headerlink" title="是因为没有GC吗？"></a>是因为没有GC吗？</h4><p>既然是在school回收的时候触发、那是不是此期间就没有回收、没有触发GC呢？这时候先使用了通过设置GODEBUG=gctrace=1来看输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">2021&#x2F;07&#x2F;05 09:27:55 bark</span><br><span class="line">...</span><br><span class="line">2021&#x2F;07&#x2F;05 09:29:53 bark</span><br><span class="line">GC forced</span><br><span class="line">gc 9 @120.877s 0%: 0.033+0.43+0.003 ms clock, 0.13+0&#x2F;0.42&#x2F;1.0+0.015 ms cpu, 2-&gt;2-&gt;0 MB, 4 MB goal, 4 P</span><br><span class="line">2021&#x2F;07&#x2F;05 09:29:54 bark</span><br><span class="line">...</span><br><span class="line">2021&#x2F;07&#x2F;05 09:31:54 bark</span><br><span class="line">GC forced</span><br><span class="line">gc 10 @241.096s 0%: 0.95+1.3+0.032 ms clock, 3.8+0&#x2F;1.2&#x2F;1.1+0.12 ms cpu, 0-&gt;0-&gt;0 MB, 4 MB goal, 4 P</span><br><span class="line">2021&#x2F;07&#x2F;05 09:31:55 bark</span><br><span class="line">...</span><br><span class="line">2021&#x2F;07&#x2F;05 09:33:54 bark</span><br><span class="line">GC forced</span><br><span class="line">gc 11 @361.576s 0%: 0.083+0.53+0.004 ms clock, 0.33+0&#x2F;0.48&#x2F;0.82+0.016 ms cpu, 0-&gt;0-&gt;0 MB, 4 MB goal, 4 P</span><br><span class="line">2021&#x2F;07&#x2F;05 09:33:55 bark</span><br><span class="line">2021&#x2F;07&#x2F;05 09:33:56 bark</span><br><span class="line">2021&#x2F;07&#x2F;05 09:33:57 bark</span><br></pre></td></tr></table></figure>
+<p>从上面的输出我们可以看出来、每两分钟，是执行了GC的！<br>那么问题是什么呢？<br><strong>经过在知识星球上、欧长坤大佬的回复得知：这里的输出只是标记阶段、并不是清除阶段。而SetFinalizer的触发是要在实际清除阶段才会触发的</strong><br>结合<a href="https://www.ardanlabs.com/blog/2018/12/garbage-collection-in-go-part1-semantics.html" target="_blank" rel="noopener">这篇文章</a>我知道了，其实可以说的GC和sweep完全是两个阶段，笼统的在这里可以认为GC阶段纯粹是标记阶段【所以<strong>上面的gctrace=1参数的输出信息全部是标记阶段、是看不到sweep相关信息的</strong>】，而sweep阶段是要在标记为不用的块需要再次被用到的时候才会发生的阶段！</p>
+<h4 id="验证回答之手动触发sweep"><a href="#验证回答之手动触发sweep" class="headerlink" title="验证回答之手动触发sweep"></a>验证回答之手动触发sweep</h4><p>可以通过分配大内存（从而要用那部分标记为已不用的堆内存）或 runtime.GC()手动触发</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line">package main</span><br><span class="line"></span><br><span class="line">import (</span><br><span class="line">	&quot;log&quot;</span><br><span class="line">	&quot;runtime&quot;</span><br><span class="line">	&quot;time&quot;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">type dog struct &#123;</span><br><span class="line">	stop chan bool</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func (d *dog) dog_run() &#123;</span><br><span class="line">	ticker :&#x3D; time.NewTicker(1 * time.Second)</span><br><span class="line">	for &#123;</span><br><span class="line">		select &#123;</span><br><span class="line">		case &lt;-ticker.C:</span><br><span class="line">			log.Println(&quot;bark&quot;)</span><br><span class="line">		case &lt;-d.stop:</span><br><span class="line">			ticker.Stop()</span><br><span class="line">			return</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">type School struct &#123;</span><br><span class="line">	Students []string</span><br><span class="line">	dog      *dog</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func (s *School) doNothing() &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func dog_stop(s *School) &#123;</span><br><span class="line">	log.Println(&quot;dog_stop get called&quot;)</span><br><span class="line">	s.dog.stop &lt;- true</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func (s *School) new() &#123;</span><br><span class="line">	watch_dog :&#x3D; dog&#123;make(chan bool)&#125;</span><br><span class="line">	s.dog &#x3D; &amp;watch_dog</span><br><span class="line">	go watch_dog.dog_run()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func NewSchool(names ...string) *School &#123;</span><br><span class="line">	school :&#x3D; School&#123;Students: names&#125;</span><br><span class="line">	school.new()</span><br><span class="line">	runtime.SetFinalizer(&amp;school, dog_stop)</span><br><span class="line">	return &amp;school</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func main() &#123;</span><br><span class="line">	school :&#x3D; NewSchool([]string&#123;&quot;xx小学&quot;&#125;...)</span><br><span class="line">	school.doNothing()</span><br><span class="line">	time.Sleep(time.Second * 4)</span><br><span class="line">	school &#x3D; nil</span><br><span class="line">	log.Println(&quot;school closed&quot;)</span><br><span class="line">	time.Sleep(4 * time.Second)</span><br><span class="line">	log.Println(&quot;handly triggered GC start&quot;)</span><br><span class="line">	runtime.GC()</span><br><span class="line">	log.Println(&quot;handly triggered GC end&quot;)</span><br><span class="line">	time.Sleep(4 * time.Second)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">2021&#x2F;07&#x2F;05 13:37:52 bark</span><br><span class="line">2021&#x2F;07&#x2F;05 13:37:53 bark</span><br><span class="line">2021&#x2F;07&#x2F;05 13:37:54 bark</span><br><span class="line">2021&#x2F;07&#x2F;05 13:37:55 school closed</span><br><span class="line">2021&#x2F;07&#x2F;05 13:37:55 bark</span><br><span class="line">2021&#x2F;07&#x2F;05 13:37:56 bark</span><br><span class="line">2021&#x2F;07&#x2F;05 13:37:57 bark</span><br><span class="line">2021&#x2F;07&#x2F;05 13:37:58 bark</span><br><span class="line">2021&#x2F;07&#x2F;05 13:37:59 bark</span><br><span class="line">2021&#x2F;07&#x2F;05 13:37:59 handly triggered GC start</span><br><span class="line">2021&#x2F;07&#x2F;05 13:37:59 handly triggered GC end</span><br><span class="line">2021&#x2F;07&#x2F;05 13:37:59 dog_stop get called</span><br></pre></td></tr></table></figure>
+<p>可见在手动触发后、是有效触发了通过runtime.SetFinalizer绑定的dog_stop方法的！</p>
+<h4 id="怎么才能看到是真的触发了sweep呢？"><a href="#怎么才能看到是真的触发了sweep呢？" class="headerlink" title="怎么才能看到是真的触发了sweep呢？"></a>怎么才能看到是真的触发了sweep呢？</h4><p>虽然大佬说了，但是不看到真的是因为没有触发sweep以及runtime.GC()是真的触发了sweep还是不甘心，那么怎么能够看到是不是真的触发了sweep呢？</p>
+<h5 id="错解：通过gcpacertrace参数"><a href="#错解：通过gcpacertrace参数" class="headerlink" title="错解：通过gcpacertrace参数"></a>错解：通过gcpacertrace参数</h5><p>胡乱看的时候、有看到可以设置gcpacertrace参数，其中看到了很具有迷惑性的sweep相关信息（以下是设置了GODEBUG=gctrace=1,gcpacertrace=1的输出）：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">2021&#x2F;07&#x2F;05 10:09:47 bark</span><br><span class="line">...</span><br><span class="line">2021&#x2F;07&#x2F;05 10:11:45 bark</span><br><span class="line">GC forced</span><br><span class="line">pacer: assist ratio&#x3D;+1.466185e-001 (scan 0 MB in 2-&gt;4 MB) workers&#x3D;1++0.000000e+000</span><br><span class="line">pacer: H_m_prev&#x3D;748712 h_t&#x3D;+9.500000e-001 H_T&#x3D;4194304 h_a&#x3D;+2.116616e+000 H_a&#x3D;2333448 h_g&#x3D;+4.602026e+000 H_g&#x3D;4194304 u_a&#x3D;+2.500000e-001 u_g&#x3D;+3.000000e-001 W_a&#x3D;512096 goalΔ&#x3D;+3.652026e+000 actualΔ&#x3D;+1.166616e+000 u_a&#x2F;u_g&#x3D;+8.333333e-001</span><br><span class="line">gc 9 @121.098s 0%: 0.17+1.2+0.13 ms clock, 0.69+0&#x2F;0.81&#x2F;0+0.52 ms cpu, 2-&gt;2-&gt;0 MB, 4 MB goal, 4 P</span><br><span class="line">pacer: sweep done at heap size 0MB; allocated 0MB during sweep; swept 417 pages at +1.748475e-004 pages&#x2F;byte</span><br><span class="line">2021&#x2F;07&#x2F;05 10:11:46 bark</span><br><span class="line">...</span><br><span class="line">2021&#x2F;07&#x2F;05 10:13:46 bark</span><br><span class="line">GC forced</span><br><span class="line">pacer: assist ratio&#x3D;+7.457321e-002 (scan 0 MB in 0-&gt;4 MB) workers&#x3D;1++0.000000e+000</span><br><span class="line">pacer: H_m_prev&#x3D;760792 h_t&#x3D;+9.500000e-001 H_T&#x3D;4194304 h_a&#x3D;+0.000000e+000 H_a&#x3D;760792 h_g&#x3D;+4.513076e+000 H_g&#x3D;4194304 u_a&#x3D;+2.500000e-001 u_g&#x3D;+3.000000e-001 W_a&#x3D;510688 goalΔ&#x3D;+3.563076e+000 actualΔ&#x3D;-9.500000e-001 u_a&#x2F;u_g&#x3D;+8.333333e-001</span><br><span class="line">gc 10 @241.368s 0%: 0.095+0.87+0.13 ms clock, 0.38+0&#x2F;0.70&#x2F;0.61+0.52 ms cpu, 0-&gt;0-&gt;0 MB, 4 MB goal, 4 P</span><br><span class="line">pacer: sweep done at heap size 0MB; allocated 0MB during sweep; swept 267 pages at +1.100755e-004 pages&#x2F;byte</span><br><span class="line">2021&#x2F;07&#x2F;05 10:13:47 bark</span><br><span class="line">...</span><br><span class="line">2021&#x2F;07&#x2F;05 10:15:46 bark</span><br><span class="line">GC forced</span><br><span class="line">pacer: assist ratio&#x3D;+7.349755e-002 (scan 0 MB in 0-&gt;4 MB) workers&#x3D;1++0.000000e+000</span><br><span class="line">pacer: H_m_prev&#x3D;720120 h_t&#x3D;+9.500000e-001 H_T&#x3D;4194304 h_a&#x3D;+0.000000e+000 H_a&#x3D;720120 h_g&#x3D;+4.824451e+000 H_g&#x3D;4194304 u_a&#x3D;+2.500000e-001 u_g&#x3D;+3.000000e-001 W_a&#x3D;510688 goalΔ&#x3D;+3.874451e+000 actualΔ&#x3D;-9.500000e-001 u_a&#x2F;u_g&#x3D;+8.333333e-001</span><br><span class="line">gc 11 @361.639s 0%: 0.11+1.3+0.11 ms clock, 0.46+0&#x2F;0.79&#x2F;0.89+0.44 ms cpu, 0-&gt;0-&gt;0 MB, 4 MB goal, 4 P</span><br><span class="line">pacer: sweep done at heap size 0MB; allocated 0MB during sweep; swept 260 pages at +1.071896e-004 pages&#x2F;byte</span><br><span class="line">2021&#x2F;07&#x2F;05 10:15:47 bark</span><br><span class="line">2021&#x2F;07&#x2F;05 10:15:48 bark</span><br><span class="line">2021&#x2F;07&#x2F;05 10:15:49 bark</span><br><span class="line">2021&#x2F;07&#x2F;05 10:15:50 bark</span><br></pre></td></tr></table></figure>
+<p>虽然pacer的输出有sweep done at…, 但是其并不是真正说的sweep。因为pacer本身就不是处理sweep的，而是处理调整下次gc频率等作用的算法…</p>
+<h5 id="正解：go-tool-trace"><a href="#正解：go-tool-trace" class="headerlink" title="正解：go tool trace"></a>正解：go tool trace</h5><p>go tool trace 可以看到所有的程序运行细节</p>
+<ul>
+<li><p>这里先看下调用了runtime.GC()的情况</p>
+<ol>
+<li><p>在代码中加入trace相关代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">type dog struct &#123;</span><br><span class="line">	stop chan bool</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func (d *dog) dog_run() &#123;</span><br><span class="line">	ticker :&#x3D; time.NewTicker(1 * time.Second)</span><br><span class="line">	for &#123;</span><br><span class="line">		select &#123;</span><br><span class="line">		case &lt;-ticker.C:</span><br><span class="line">			&#x2F;&#x2F; log.Println(&quot;bark&quot;)</span><br><span class="line">		case &lt;-d.stop:</span><br><span class="line">			ticker.Stop()</span><br><span class="line">			return</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">type School struct &#123;</span><br><span class="line">	Students []string</span><br><span class="line">	dog      *dog</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func (s *School) doNothing() &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func dog_stop(s *School) &#123;</span><br><span class="line">	&#x2F;&#x2F; log.Println(&quot;dog_stop get called&quot;)</span><br><span class="line">	s.dog.stop &lt;- true</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func (s *School) new() &#123;</span><br><span class="line">	watch_dog :&#x3D; dog&#123;make(chan bool)&#125;</span><br><span class="line">	s.dog &#x3D; &amp;watch_dog</span><br><span class="line">	go watch_dog.dog_run()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func NewSchool(names ...string) *School &#123;</span><br><span class="line">	school :&#x3D; School&#123;Students: names&#125;</span><br><span class="line">	school.new()</span><br><span class="line">	runtime.SetFinalizer(&amp;school, dog_stop)</span><br><span class="line">	return &amp;school</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func main() &#123;</span><br><span class="line">	trace.Start(os.Stderr)</span><br><span class="line">	defer trace.Stop()</span><br><span class="line">	school :&#x3D; NewSchool([]string&#123;&quot;xx小学&quot;&#125;...)</span><br><span class="line">	school.doNothing()</span><br><span class="line">	time.Sleep(time.Second * 4)</span><br><span class="line">	school &#x3D; nil</span><br><span class="line">	time.Sleep(4 * time.Second)</span><br><span class="line">	runtime.GC()</span><br><span class="line">	time.Sleep(4 * time.Second)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>将trace输出放到文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">go run main.go 2&gt; trace_with_handly_gc.out</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>运行go tool trace运行可在浏览器中查看情况</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ go tool trace trace_with_handly_gc.out</span><br><span class="line">2021&#x2F;07&#x2F;05 13:52:41 Parsing trace...</span><br><span class="line">2021&#x2F;07&#x2F;05 13:52:41 Splitting trace...</span><br><span class="line">2021&#x2F;07&#x2F;05 13:52:41 Opening browser. Trace viewer is listening on http:&#x2F;&#x2F;127.0.0.1:64658</span><br></pre></td></tr></table></figure>
+<p>去到浏览器后显示：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">View trace</span><br><span class="line">Goroutine analysis</span><br><span class="line">Network blocking profile (⬇)</span><br><span class="line">Synchronization blocking profile (⬇)</span><br><span class="line">Syscall blocking profile (⬇)</span><br><span class="line">Scheduler latency profile (⬇)</span><br><span class="line">User-defined tasks</span><br><span class="line">User-defined regions</span><br><span class="line">Minimum mutator utilization</span><br></pre></td></tr></table></figure>
+<p>点击其中的“Goroutine analysis”可看到程序中每个goroutine的信息：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Goroutines:</span><br><span class="line">runtime.main N&#x3D;1</span><br><span class="line">runtime.gcBgMarkWorker N&#x3D;4</span><br><span class="line">main.(*dog).dog_run N&#x3D;1</span><br><span class="line">runtime&#x2F;trace.Start.func1 N&#x3D;1</span><br><span class="line">runtime.runfinq N&#x3D;1</span><br><span class="line">runtime.bgsweep N&#x3D;1</span><br><span class="line">runtime.bgscavenge N&#x3D;1</span><br><span class="line">N&#x3D;1</span><br></pre></td></tr></table></figure>
+<p><strong>其中的runtime.bgsweep goroutine就表明触发了sweep！</strong></p>
+</li>
+</ol>
+</li>
+<li><p>再次原程序并且走上面的流程、到最后一步“Goroutine analysis”可见输出如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Goroutines:</span><br><span class="line">main.(*dog).dog_run N&#x3D;1</span><br><span class="line">runtime.main N&#x3D;1</span><br><span class="line">runtime&#x2F;trace.Start.func1 N&#x3D;1</span><br><span class="line">N&#x3D;4</span><br></pre></td></tr></table></figure>
+<p>可见、上面没有runtime.bgsweep goroutine、没有触发sweep</p>
+</li>
+</ul>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><ul>
+<li>runtime.SetFinalizer的绑定触发是在sweep时候才会触发</li>
+<li>gctrace=1参数看到的只是gc的信息，是没有sweep相关信息的</li>
+<li>go tool trace非常强大、可基本看到全部信息</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/go/" rel="tag"># go</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/06/20/%E8%AF%BBgo%E9%A1%B9%E7%9B%AE%E6%BA%90%E7%A0%81%E6%89%93%E5%8D%A1%E4%B8%80%20-%20gcache%20&%20go-cache/" rel="prev" title="读go项目源码打卡一 - gcache & go-cache">
+      <i class="fa fa-chevron-left"></i> 读go项目源码打卡一 - gcache & go-cache
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#问题缘由"><span class="nav-number">1.</span> <span class="nav-text">问题缘由</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#问题"><span class="nav-number">2.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#排查过程"><span class="nav-number">3.</span> <span class="nav-text">排查过程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#是因为没有GC吗？"><span class="nav-number">3.1.</span> <span class="nav-text">是因为没有GC吗？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#验证回答之手动触发sweep"><span class="nav-number">3.2.</span> <span class="nav-text">验证回答之手动触发sweep</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#怎么才能看到是真的触发了sweep呢？"><span class="nav-number">3.3.</span> <span class="nav-text">怎么才能看到是真的触发了sweep呢？</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#错解：通过gcpacertrace参数"><span class="nav-number">3.3.1.</span> <span class="nav-text">错解：通过gcpacertrace参数</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#正解：go-tool-trace"><span class="nav-number">3.3.2.</span> <span class="nav-text">正解：go tool trace</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">-_-</p>
+  <div class="site-description" itemprop="description">15652616715</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">-_-</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'edf9b4cf38817a8e9705',
+      clientSecret: 'a9e7395b37100257f052db822d40873b9fca18a5',
+      repo: 'pillipanda.github.io',
+      owner: 'pillipanda',
+      admin: ['pillipanda'],
+      id: '6f043e5bde9bfb499b00307f83f31801',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>
