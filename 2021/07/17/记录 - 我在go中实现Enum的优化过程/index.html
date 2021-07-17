@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="写python的时候、其enum用起来非常方便。写go却发现python自带支持的功能有很多都需要自己去实现一遍，故特此记录下我优化的过程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="记录 - 我在go中实现Enum的优化过程">
+<meta property="og:url" content="http://yoursite.com/2021/07/17/%E8%AE%B0%E5%BD%95%20-%20%E6%88%91%E5%9C%A8go%E4%B8%AD%E5%AE%9E%E7%8E%B0Enum%E7%9A%84%E4%BC%98%E5%8C%96%E8%BF%87%E7%A8%8B/index.html">
+<meta property="og:site_name" content="pd">
+<meta property="og:description" content="写python的时候、其enum用起来非常方便。写go却发现python自带支持的功能有很多都需要自己去实现一遍，故特此记录下我优化的过程">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-07-17T06:25:00.000Z">
+<meta property="article:modified_time" content="2021-07-17T06:34:17.863Z">
+<meta property="article:author" content="-_-">
+<meta property="article:tag" content="go">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2021/07/17/%E8%AE%B0%E5%BD%95%20-%20%E6%88%91%E5%9C%A8go%E4%B8%AD%E5%AE%9E%E7%8E%B0Enum%E7%9A%84%E4%BC%98%E5%8C%96%E8%BF%87%E7%A8%8B/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>记录 - 我在go中实现Enum的优化过程 | pd</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">pd</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">一瞥之见</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/07/17/%E8%AE%B0%E5%BD%95%20-%20%E6%88%91%E5%9C%A8go%E4%B8%AD%E5%AE%9E%E7%8E%B0Enum%E7%9A%84%E4%BC%98%E5%8C%96%E8%BF%87%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="-_-">
+      <meta itemprop="description" content="15652616715">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="pd">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          记录 - 我在go中实现Enum的优化过程
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-07-17 14:25:00 / 修改时间：14:34:17" itemprop="dateCreated datePublished" datetime="2021-07-17T14:25:00+08:00">2021-07-17</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>写python的时候、其enum用起来非常方便。写go却发现python自带支持的功能有很多都需要自己去实现一遍，故特此记录下我优化的过程</p>
+</blockquote>
+<a id="more"></a>
+
+<p>以一个视频分辨率的枚举类型为例</p>
+<h1 id="python中的实现"><a href="#python中的实现" class="headerlink" title="python中的实现"></a>python中的实现</h1><p>除了最基本也是最重要的需要能够直接与具体枚举类型比较外，python中的enum用起来可以自动的支持：</p>
+<ol>
+<li>如果输入值不在枚举值中会raise exception</li>
+<li>对于常见的获取全部枚举值的需求能够很方便的获取到<br>代码如下：</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> enum <span class="keyword">import</span> Enum</span><br><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> List</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Resolution</span><span class="params">(Enum)</span>:</span></span><br><span class="line">    R480P = <span class="string">"480P"</span></span><br><span class="line">    R720P = <span class="string">"720P"</span></span><br><span class="line">    R1080P = <span class="string">"1080P"</span></span><br><span class="line">    R2K = <span class="string">"2K"</span></span><br><span class="line">    R4K = <span class="string">"4K"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">can_compare_to_enum_directly</span><span class="params">()</span>:</span></span><br><span class="line">    resolution = Resolution(<span class="string">'1080P'</span>)</span><br><span class="line">    print(resolution == Resolution.R1080P)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">raise_exception_if_value_not_in_enum</span><span class="params">()</span>:</span></span><br><span class="line">    not_valid_value = <span class="string">'10P'</span></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        resolution = Resolution(not_valid_value)</span><br><span class="line">    <span class="keyword">except</span> ValueError <span class="keyword">as</span> e:</span><br><span class="line">        print(<span class="string">'raised not valid Resolution exception'</span>)</span><br><span class="line">    <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">        print(e)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_all_enum_values</span><span class="params">()</span> -&gt; List[str]:</span></span><br><span class="line">    <span class="keyword">return</span> [i.value <span class="keyword">for</span> i <span class="keyword">in</span> Resolution]</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    <span class="comment"># 需要能够支持直接和类型比较</span></span><br><span class="line">    can_compare_to_enum_directly()</span><br><span class="line">    <span class="comment"># 要能够检测输出值是否是有效的</span></span><br><span class="line">    raise_exception_if_value_not_in_enum()</span><br><span class="line">    <span class="comment"># 要能够输出全部的可选值</span></span><br><span class="line">    all_enum_values = get_all_enum_values()</span><br><span class="line">    print(all_enum_values)</span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">True</span><br><span class="line">raised not valid Resolution exception</span><br><span class="line">[&#39;480P&#39;, &#39;720P&#39;, &#39;1080P&#39;, &#39;2K&#39;, &#39;4K&#39;]</span><br></pre></td></tr></table></figure>
+
+<h1 id="Go中的实现-amp-优化过程记录"><a href="#Go中的实现-amp-优化过程记录" class="headerlink" title="Go中的实现&amp;优化过程记录"></a>Go中的实现&amp;优化过程记录</h1><p>写Go的时候发现python里面能够简单实现/直接支持的功能/需求，实现起来却还真是有点儿“麻烦”。故特此记录我是如何一步步改进我的代码实现的。</p>
+<h2 id="原始版本代码及其存在的问题："><a href="#原始版本代码及其存在的问题：" class="headerlink" title="原始版本代码及其存在的问题："></a>原始版本代码及其存在的问题：</h2><p>以下版本下意识最容易/直接写出来的代码</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Resolution <span class="keyword">string</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> (</span><br><span class="line">	Resolution480P  Resolution = <span class="string">"480P"</span></span><br><span class="line">	Resolution720P  Resolution = <span class="string">"720P"</span></span><br><span class="line">	Resolution1080P Resolution = <span class="string">"1080P"</span></span><br><span class="line">	Resolution2K    Resolution = <span class="string">"2K"</span></span><br><span class="line">	Resolution4K    Resolution = <span class="string">"4K"</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>这可能是了，但是这样实现的话，会有以下问题：</p>
+<ol>
+<li>即使输入的是不在enum中的值，也不会有问题（<a href="https://play.golang.org/p/pfg7FjGje3Q" target="_blank" rel="noopener">代码可见</a>）：</li>
+</ol>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	resolution := Resolution(<span class="string">"10P"</span>)</span><br><span class="line">	fmt.Println(resolution)  <span class="comment">// 成功输出10P，但是10P压根不是有效的值	</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li><p>常见的一个需求就是要能够提供一个列表列出全部的值、也就是[“480P”, “720P”, “1080P”, “2K”, “4K”]。这么写并不能够较为优雅的实现输出这个列表！</p>
+</li>
+<li><p>直接使用string类型，内存占用较大</p>
+</li>
+</ol>
+<h2 id="优化一：解决上面不支持的功能"><a href="#优化一：解决上面不支持的功能" class="headerlink" title="优化一：解决上面不支持的功能"></a>优化一：解决上面不支持的功能</h2><p>当然，最好的学习办法就是看官方库相似的需求是怎么实现的了，比如<a href="https://golang.org/src/crypto/crypto.go" target="_blank" rel="noopener">crypto</a>里面的实现。</p>
+<p>学习了其实现后，我的实现改为了如下（其已经解决了识别输入非有效枚举值 &amp; 输出全部枚举值的需求）：</p>
+<p><strong>特别注意下面代码中第10行的技巧！利用了这个标识位才实现了这两个功能</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Resolution <span class="keyword">int</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> (</span><br><span class="line">	Resolution300 Resolution = <span class="literal">iota</span></span><br><span class="line">	Resolution600</span><br><span class="line">	Resolution720P</span><br><span class="line">	Resolution1080P</span><br><span class="line">	Resolution2K</span><br><span class="line">	Resolution4K</span><br><span class="line">	maxResolution</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> (</span><br><span class="line">	DefaultResolution = Resolution300</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> enumItem <span class="keyword">struct</span> &#123;</span><br><span class="line">	Label <span class="keyword">string</span></span><br><span class="line">	Value <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> allEnumItems = <span class="built_in">make</span>([]enumItem, <span class="number">0</span>, maxResolution<span class="number">-1</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">init</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">for</span> i := Resolution(<span class="number">0</span>); i &lt; maxResolution; i++ &#123;</span><br><span class="line">		allEnumItems = <span class="built_in">append</span>(allEnumItems, enumItem&#123;Resolution(i).String(), <span class="keyword">int</span>(i)&#125;)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(this Resolution)</span> <span class="title">String</span><span class="params">()</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="keyword">switch</span> this &#123;</span><br><span class="line">	<span class="keyword">case</span> Resolution300:</span><br><span class="line">		<span class="keyword">return</span> <span class="string">"300"</span></span><br><span class="line">	<span class="keyword">case</span> Resolution600:</span><br><span class="line">		<span class="keyword">return</span> <span class="string">"600"</span></span><br><span class="line">	<span class="keyword">case</span> Resolution720P:</span><br><span class="line">		<span class="keyword">return</span> <span class="string">"720P"</span></span><br><span class="line">	<span class="keyword">case</span> Resolution1080P:</span><br><span class="line">		<span class="keyword">return</span> <span class="string">"1080P"</span></span><br><span class="line">	<span class="keyword">case</span> Resolution2K:</span><br><span class="line">		<span class="keyword">return</span> <span class="string">"2K"</span></span><br><span class="line">	<span class="keyword">case</span> Resolution4K:</span><br><span class="line">		<span class="keyword">return</span> <span class="string">"4K"</span></span><br><span class="line">	<span class="keyword">default</span>:</span><br><span class="line">		<span class="keyword">return</span> <span class="string">"not valid"</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(resolution Resolution)</span> <span class="title">IsValid</span><span class="params">()</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> resolution &gt;= Resolution(<span class="number">0</span>) &amp;&amp; resolution &lt; maxResolution &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">AllResolutions</span><span class="params">()</span> []<span class="title">enumItem</span></span>&#123;</span><br><span class="line">	<span class="keyword">return</span> allEnumItems</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Printf(<span class="string">"%+v\n"</span>, AllResolutions())  <span class="comment">// [&#123;Label:300 Value:0&#125; &#123;Label:600 Value:1&#125; &#123;Label:720P Value:2&#125; &#123;Label:1080P Value:3&#125; &#123;Label:2K Value:4&#125; &#123;Label:4K Value:5&#125;]</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">var</span> resolution Resolution</span><br><span class="line"></span><br><span class="line">	validValue := <span class="number">0</span></span><br><span class="line">	resolution = Resolution(validValue)</span><br><span class="line">	fmt.Println(resolution.IsValid())  <span class="comment">// true</span></span><br><span class="line">	fmt.Println(resolution == Resolution300)  <span class="comment">// true</span></span><br><span class="line">	fmt.Println(resolution == Resolution600)  <span class="comment">// false</span></span><br><span class="line">	fmt.Println(resolution.String())  <span class="comment">// 300</span></span><br><span class="line"></span><br><span class="line">	notValidValue := <span class="number">100</span></span><br><span class="line">	resolution = Resolution(notValidValue)</span><br><span class="line">	fmt.Println(resolution.IsValid())  <span class="comment">// false</span></span><br><span class="line">	fmt.Println(resolution.String())  <span class="comment">// not valid</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>⚠️：改为上面的实现后需要注意的就是输入值从string变成了int型。具体运行代码<a href="https://play.golang.org/p/UDPqyMio6o8" target="_blank" rel="noopener">可见</a></p>
+<h2 id="优化二：代码复用问题"><a href="#优化二：代码复用问题" class="headerlink" title="优化二：代码复用问题"></a>优化二：代码复用问题</h2><p>自然，我们的代码里面会有大量的不同类的枚举值，那么都要按照上面实现一遍的话，不是不可以，但是我认为可以有部分的代码可以“节约”</p>
+<p>一开始就说了，要解决的要点有三个：</p>
+<ol>
+<li>支持直接与具体枚举类型比较</li>
+<li>支持能够检测输入值是不是有效的</li>
+<li>支持输出全部枚举值</li>
+</ol>
+<p>这里面，功能1肯定是不能够摘出去的（不是不能、是摘出去后可能还需要通过类型转换再来比较、不优雅）；功能3是很容易（因为是输出而已，不需要再在内部类型之间再做比较了）能够摘出去实现进行复用的；功能2的话也可以摘出去，不过有一定的性能损失；</p>
+<p>实现如下（以下仅以原本值为string类型的做说明），<a href="https://play.golang.org/p/nrj1cl3GFZY" target="_blank" rel="noopener">go playground</a>：</p>
+<ol>
+<li><p>单独写enum相关的包<br>文件enum/str_enum.go代码如下</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> enum</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> StrEnum <span class="keyword">interface</span> &#123;</span><br><span class="line">	ItemsAmount() <span class="keyword">int</span></span><br><span class="line">	Value() <span class="keyword">int</span></span><br><span class="line">	String() <span class="keyword">string</span></span><br><span class="line">	StringByValue(value <span class="keyword">int</span>) <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> StrEnumItem <span class="keyword">struct</span> &#123;</span><br><span class="line">	Label <span class="keyword">string</span></span><br><span class="line">	Value <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">AllStrEnums</span><span class="params">(strEnum StrEnum)</span> []<span class="title">StrEnumItem</span></span> &#123;</span><br><span class="line">	itemsAmount := strEnum.ItemsAmount()</span><br><span class="line">	resp := <span class="built_in">make</span>([]StrEnumItem, <span class="number">0</span>, itemsAmount<span class="number">-1</span>)</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; itemsAmount; i++ &#123;</span><br><span class="line">		resp = <span class="built_in">append</span>(resp, StrEnumItem&#123;strEnum.StringByValue(i), i&#125;)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> resp</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">IsStrEnumValid</span><span class="params">(strEnum StrEnum)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">	itemsAmount := strEnum.ItemsAmount()</span><br><span class="line">	number := strEnum.Value()</span><br><span class="line">	<span class="keyword">if</span> number &gt;= <span class="number">0</span> &amp;&amp; number &lt; itemsAmount &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>定义枚举</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Resolution <span class="keyword">int</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> (</span><br><span class="line">	Resolution300 Resolution = <span class="literal">iota</span></span><br><span class="line">	Resolution600</span><br><span class="line">	Resolution720P</span><br><span class="line">	Resolution1080P</span><br><span class="line">	Resolution2K</span><br><span class="line">	Resolution4K</span><br><span class="line">	maxResolution</span><br><span class="line">)</span><br><span class="line"><span class="keyword">const</span> (</span><br><span class="line">	DefaultResolution = Resolution300</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(r Resolution)</span> <span class="title">Value</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">int</span>(r)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(r Resolution)</span> <span class="title">String</span><span class="params">()</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="keyword">switch</span> r &#123;</span><br><span class="line">	<span class="keyword">case</span> Resolution300:</span><br><span class="line">		<span class="keyword">return</span> <span class="string">"300"</span></span><br><span class="line">	<span class="keyword">case</span> Resolution600:</span><br><span class="line">		<span class="keyword">return</span> <span class="string">"600"</span></span><br><span class="line">	<span class="keyword">case</span> Resolution720P:</span><br><span class="line">		<span class="keyword">return</span> <span class="string">"720P"</span></span><br><span class="line">	<span class="keyword">case</span> Resolution1080P:</span><br><span class="line">		<span class="keyword">return</span> <span class="string">"1080P"</span></span><br><span class="line">	<span class="keyword">case</span> Resolution2K:</span><br><span class="line">		<span class="keyword">return</span> <span class="string">"2K"</span></span><br><span class="line">	<span class="keyword">case</span> Resolution4K:</span><br><span class="line">		<span class="keyword">return</span> <span class="string">"4K"</span></span><br><span class="line">	<span class="keyword">default</span>:</span><br><span class="line">		<span class="keyword">return</span> <span class="string">"not valid"</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(r Resolution)</span> <span class="title">StringByValue</span><span class="params">(value <span class="keyword">int</span>)</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	res := Resolution(value)</span><br><span class="line">	<span class="keyword">return</span> res.String()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(r Resolution)</span> <span class="title">ItemsAmount</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">int</span>(maxResolution) - <span class="number">1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>可见、定义枚举可以省去<em>生成枚举值列表</em> 和 <em>判断输入值是否有效</em>两部分的逻辑！</strong></p>
+</li>
+<li><p>实际使用举例</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">	<span class="string">"xx/enum"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">// 列出全部枚举选项</span></span><br><span class="line">	<span class="comment">// 不优雅: 这点是比较别扭的，需要通过一个具体的类型才导出了全部的可选项！</span></span><br><span class="line">	fmt.Printf(<span class="string">"%+v\n"</span>, enum.AllStrEnums(DefaultResolution))  <span class="comment">// [&#123;Label:300 Value:0&#125; &#123;Label:600 Value:1&#125; &#123;Label:720P Value:2&#125; &#123;Label:1080P Value:3&#125; &#123;Label:2K Value:4&#125;]</span></span><br><span class="line">	</span><br><span class="line">	<span class="keyword">var</span> resolution Resolution</span><br><span class="line"></span><br><span class="line">	value := <span class="number">0</span></span><br><span class="line">	resolution = Resolution(value)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 直接与具体枚举类型比较</span></span><br><span class="line">	fmt.Println(resolution == Resolution300)  <span class="comment">// true</span></span><br><span class="line">	fmt.Println(resolution == Resolution600)  <span class="comment">// false</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="comment">// 判断输入值是否valid</span></span><br><span class="line">	fmt.Println(enum.IsStrEnumValid(resolution))  <span class="comment">// true</span></span><br><span class="line"></span><br><span class="line">	notValidValue := <span class="number">100</span></span><br><span class="line">	resolution = Resolution(notValidValue)</span><br><span class="line">	fmt.Println(enum.IsStrEnumValid(resolution))  <span class="comment">// false</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<p><strong>优化二和优化一的对比</strong>：</p>
+<ol>
+<li>优势<ol>
+<li><strong>复用了代码</strong>：Resolution枚举包里的代码行数从57降低到了46（而且优化二里的代码接口实际提供的功能是更多的！）</li>
+<li><strong>变化隔离</strong>：我们看到最后导出全部枚举值最后都是调用的enum包的AllStrEnums函数，其结构是：[{“label”: “300”, “value”: 0}, …], 这个其实很明显是可能给前端使用的，假设我们有10种枚举类型（如电视品牌、音频格式…），这样实现的输出统一都会是以上格式！假设哪一天突然前端要求将label这个字段改为display，我们也只需要再enum包中改一下AllStrEnums函数即可（或者新写一个进行替换/新旧兼容），想想如果是优化一中的话，那就需要在10个地方改了啊！</li>
+<li><strong>可扩展更好</strong>：因为进行了分层和对于interface的引入，对于后续的扩展支持会更加规范和方便！</li>
+</ol>
+</li>
+<li>劣势<ol>
+<li>IsValid函数的判断性能有所下降，其实这里完全可以也更为推荐不在enum包中实现这个有效性判断的，可以通过interface规定让每个枚举类型自己去实现，<strong>这样更好</strong>(因为上面说的优化其实都是对于输出枚举值列表而言的以及分层本身带来的变化隔离)。在更为复杂的系统里面，各个枚举的有效性判断可能会不都是如此就能判断的，故下派到具体的地方去实现是更好的，而且调用的时候也会更优雅，从enum.IsStrEnumValid(resolution) -&gt; resolution.IsValid()，如此的例子可见<a href="https://play.golang.org/p/aTu4GWQ0G0V" target="_blank" rel="noopener">playground</a>。这里我只是觉得我的系统如此够用了、能省就省一点儿写代码才如此放到了enum包。</li>
+<li>获取全部枚举值的参数需要一个具体的枚举值、不优雅</li>
+</ol>
+</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/go/" rel="tag"># go</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/07/05/%E8%AE%B0%E5%BD%95%20-%20%E6%8E%92%E6%9F%A5go%E7%9A%84runtime.SetFinalizer%E6%9C%AA%E2%80%9C%E5%A6%82%E6%9C%9F%E2%80%9D%E8%BF%90%E8%A1%8C%E9%97%AE%E9%A2%98/" rel="prev" title="记录 - 排查go的runtime.SetFinalizer未“如期”运行问题">
+      <i class="fa fa-chevron-left"></i> 记录 - 排查go的runtime.SetFinalizer未“如期”运行问题
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#python中的实现"><span class="nav-number">1.</span> <span class="nav-text">python中的实现</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Go中的实现-amp-优化过程记录"><span class="nav-number">2.</span> <span class="nav-text">Go中的实现&amp;优化过程记录</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#原始版本代码及其存在的问题："><span class="nav-number">2.1.</span> <span class="nav-text">原始版本代码及其存在的问题：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#优化一：解决上面不支持的功能"><span class="nav-number">2.2.</span> <span class="nav-text">优化一：解决上面不支持的功能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#优化二：代码复用问题"><span class="nav-number">2.3.</span> <span class="nav-text">优化二：代码复用问题</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">-_-</p>
+  <div class="site-description" itemprop="description">15652616715</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">-_-</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'edf9b4cf38817a8e9705',
+      clientSecret: 'a9e7395b37100257f052db822d40873b9fca18a5',
+      repo: 'pillipanda.github.io',
+      owner: 'pillipanda',
+      admin: ['pillipanda'],
+      id: 'c08787293c59b13297fb0f74b2eae105',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>
